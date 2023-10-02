@@ -1,7 +1,9 @@
+#include "log/log.h"
+
 #include <stdio.h>
 
-int main() {
-	printf("Hello FC-256!");
+int main(void) {
+	log_info("Hello FC-256!");
 
 	return 0;
 }

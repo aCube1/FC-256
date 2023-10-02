@@ -17,11 +17,13 @@ target_sources(
 	${PROJECT_NAME}
 	PRIVATE
 		src/main.c
+		src/log/log.c
 )
 
 target_precompile_headers(
 	${PROJECT_NAME}
 	PRIVATE
+		include/log/log.h
 )
 
 target_include_directories(
