@@ -3,22 +3,40 @@ Virtual 16-bit CPU.
 Endianess: Little-Endian
 
 Instruction specification:
-- Instruction: <mnemonic>[W|B] [operands]
-- format: SSAAAA00-RRIIIIII
-	- IIIIII: 6-bits opcode identifier;
-	- 00RR: 4-bits register count;
-		- 0b0000: No Register;
-		- 0b0001: 1 Register;
-		- 0b0010: 2 Registers;
-		- 0b0011 > 0b1111: INVALID.
+- Instruction: <mnemonic>[H|L] [operands]
+- format: CCSSAAAA-RRRIIIII
+	- IIIIII: 5-bits opcode identifier;
+	- RRR: 4-bits register;
 	- AAAA: 4-bits address mode;
-	- SS: 2-bit byte size.
+	- SS: 2-bit access mode;
+		- 0b00: Word;
+		- 0b01: Low Byte;
+		- 0b10: High Byte;
+		- 0b11: INVALID.
+	- CC: 2-bits register count.
+		- 0b00: No Register;
+		- 0b01: 1 Register;
+		- 0b10: 2 Registers;
+		- 0b11: INVALID.
+
+General registers: Can be accessed as operands
+- 0b000 > 0b101: rA rB rC rX rY rZ = Hold data and address.
+- 0b110: PC = 16-bits program counter;
+- 0b111: SP = 16-bits stack pointer.
+
+Internal registers: Cannot be accessed as operands
+- P = 8-bits program status (---IOCNZ).
+	- I: Disable Interrupt;
+	- O: Overflow/Underflow;
+	- C: Carry;
+	- N: Negative;
+	- Z: Zero.
 
 Address modes:
 - 0b0000 | Implied: No Operand
-- 0b0001 | Relative: Offset
-- 0b0010 | Immediate: [Constant]
-- 0b0011 | Immediate: [rX, Constant]
+- 0b0001 | Relative: (Offset)
+- 0b0010 | Immediate: Constant
+- 0b0011 | Immediate: rX, Constant
 - 0b0100 | Register: rX
 - 0b0101 | Register: rX, rY
 - 0b0110 | Absolute: (Address)
@@ -31,21 +49,3 @@ Address modes:
 - 0b1101 | Indirect: (rX), rY
 - 0b1110 | Indirect: rX, (rY)
 - 0b1111 | NoMode: RESERVED
-
-Registers:
-* We have 16 registers, from "r0" to "P".
-- r0 > rB: 16-bits general purpose registers;
-- PC: 32-bits program counter;
-- SP: 16-bits stack pointer (default: 0x2000);
-- P: 8-bits status flags (---IOCNZ)
-	- I: Disable Interrupt;
-	- O: Overflow/Underflow;
-	- C: Carry;
-	- N: Negative;
-	- Z: Zero.
-
-Byte size:
-	- 0b00: DWord | 32-bits;
-	- 0b01: Word | 16-bits;
-	- 0b10: Byte | 8-bits;
-	- 0b11: INVALID.
