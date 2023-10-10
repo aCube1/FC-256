@@ -1,51 +1,97 @@
-Virtual 16-bit CPU.
+Virtual FC-256 CPU
 
+Virtual 16-bit machine heavily inspired by SNES(Super Nintendo Entertainment System).
 Endianess: Little-Endian
 
+-----------------------------------------------------------------------------------------
+
 Instruction specification:
-- Instruction: <mnemonic>[H|L] [operands]
-- format: CCSSAAAA-RRRIIIII
-	- IIIIII: 5-bits opcode identifier;
-	- RRR: 4-bits register;
-	- AAAA: 4-bits address mode;
+- Instruction: <mnemonic>['H|'L] [operands]
+- format: 0AAAAASS-CCIIIIII
+	- IIIIII: 6-bits opcode identifier;
+	- CC: 2-bits register count;
+		- 0b00: No Register;
+		- 0b01: 1 Register;
+		- 0b10: 2 Registers;
+		- 0b11: INVALID.
 	- SS: 2-bit access mode;
 		- 0b00: Word;
 		- 0b01: Low Byte;
 		- 0b10: High Byte;
 		- 0b11: INVALID.
-	- CC: 2-bits register count.
-		- 0b00: No Register;
-		- 0b01: 1 Register;
-		- 0b10: 2 Registers;
-		- 0b11: INVALID.
+	- AAAAA: 5-bits address mode.
 
-General registers: Can be accessed as operands
-- 0b000 > 0b101: rA rB rC rX rY rZ = Hold data and address.
-- 0b110: PC = 16-bits program counter;
-- 0b111: SP = 16-bits stack pointer.
+* Instructions can access the High or Low byte from operands using 'L or 'H postfixes.
+Only the High or Low byte can be accessed, it's impossible to access High byte from
+1st operand, and the Low byte from 2nd operand, or vice-versa.
+
+General registers: Can be accessed as operands. If the operand has registers,
+then an extra byte after instruction specify the selection.
+- 0x00 > 0x05: rA rB rC rX rY rZ = Data and address.
+- 0x06: PC = Program counter;
+- 0x07: SP = Stack pointer.
+
+* All registers are 16-bits wide.
+* If the operand contains more than 1 register, the lower nibble specify
+the first register, and the high nibble specify the second register.
+* Example: MOV rX, rZ
+	The register count is 2, rX=0x03 and rZ=0x05, so the extra byte is 0x53.
 
 Internal registers: Cannot be accessed as operands
-- P = 8-bits program status (---IOCNZ).
+- BB: Program bank (256 banks);
+- DB: Data bank (256 banks);
+- P: Program status (---IOCNZ).
 	- I: Disable Interrupt;
 	- O: Overflow/Underflow;
 	- C: Carry;
 	- N: Negative;
 	- Z: Zero.
 
+* All registers are 8-bits wide.
+
 Address modes:
-- 0b0000 | Implied: No Operand
-- 0b0001 | Relative: (Offset)
-- 0b0010 | Immediate: Constant
-- 0b0011 | Immediate: rX, Constant
-- 0b0100 | Register: rX
-- 0b0101 | Register: rX, rY
-- 0b0110 | Absolute: (Address)
-- 0b0111 | Absolute: rX, (Address)
-- 0b1000 | Absolute: (Address), rX
-- 0b1001 | Absolute Indexed: (rX + Constant)
-- 0b1010 | Absolute Indexed: rX, (rY + Constant)
-- 0b1011 | Absolute Indexed: (rX + Constant), rY
-- 0b1100 | Indirect: (rX)
-- 0b1101 | Indirect: (rX), rY
-- 0b1110 | Indirect: rX, (rY)
-- 0b1111 | NoMode: RESERVED
+ Code | Name      | Operand
+ 0x00 | Implied   | No Operand
+ 0x01 | Relative  | Const
+ 0x02 | Immediate | Const
+ 0x03 | Immediate | rX, Const
+ 0x04 | Register  | rX
+ 0x05 | Register  | rX, rY
+ 0x06 | Absolute  | (Addr)
+ 0x07 | Absolute  | rX, (Addr)
+ 0x08 | Absolute  | (Addr), rX
+ 0x09 | Indexed   | (Addr + Const)
+ 0x0a | Indexed   | rX, (Addr + Const)
+ 0x0b | Indexed   | (Addr + Const), rY
+ 0x0c | Indirect  | (rX)
+ 0x0d | Indirect  | rX, (rY)
+ 0x0e | Indirect  | (rX), rY
+ 0x0f | Long Abs  | (LAddr)
+ 0x10 | Long Abs  | rX, (LAddr)
+ 0x11 | Long Abs  | (LAddr), rX
+ 0x12 | Long Ind  | (LAddr + Const)
+ 0x13 | Long Ind  | rX, (LAddr + Const)
+ 0x14 | Long Ind  | (LAddr + Const), rX
+ 0x15 | NoMode    | RESERVED
+ 0x16 | NoMode    | RESERVED
+ 0x17 | NoMode    | RESERVED
+ 0x18 | NoMode    | RESERVED
+ 0x19 | NoMode    | RESERVED
+ 0x1a | NoMode    | RESERVED
+ 0x1b | NoMode    | RESERVED
+ 0x1c | NoMode    | RESERVED
+ 0x1d | NoMode    | RESERVED
+ 0x1e | NoMode    | RESERVED
+ 0x1f | NoMode    | RESERVED
+
+Banking:
+* There are 2 registers for bank switching: BB and DB.
+
+* The BB register keeps track of the current bank for the executed instruction.
+If the current instruction is at address 0x0f2001, this register will hold the
+value of 0x0f, and the PC (Program Counter) will hold the value 0x2001.
+
+* The DB register holds the data bank address. When using the absolute or indexed
+addressing modes with a long address, an extra byte will be added before the
+actual address. So if instruction uses 0x246942 address, the CPU will read the
+extra byte(0x24) and store it on the register.
