@@ -1,0 +1,30 @@
+Virtual FC-256 CPU Instructions
+
+CPU instructions identifiers:
+* In the instruction word, we have 6-bits for the instruction identifier,
+which allow we have 64 (3f) possible identifiers.
+
+Descriptions:
+Code | Mnemonic | Description
+0x00 |   MOV    | A = B
+0x01 |   ADD    | A += B
+0x02 |   SUB    | A -= B
+0x03 |   MUL    | A *= B
+0x04 |   DIV    | A /= B
+0x05 |   INC    | A += 1
+0x06 |   DEC    | A -= 1
+
+Instructions:
+Mnemonic | Operand             | Execution
+  MOV    | rX, Const           | rX = Const
+  MOV    | rX, rY              | rX = rY
+  MOV    | rX, (Addr)          | rX = mem[Addr]
+  MOV    | (Addr), rX          | mem[Addr] = rX
+  MOV    | rX, (Addr + Const)  | rX = mem[Addr + Const]
+  MOV    | (Addr + Const), rX  | mem[Addr + Const] = rX
+  MOV    | rX, (rY)            | rX = mem[rY]
+  MOV    | (rX), rY            | mem[rX] = rY
+  MOV    | rX, (LAddr)         | BB = LAddr >> 0x10, rX = mem[LAddr]
+  MOV    | (LAddr), rX         | BB = LAddr >> 0x10, mem[LAddr] = rX
+  MOV    | rX, (LAddr + Const) | BB = LAddr >> 0x10, rX = mem[LAddr + Const]
+  MOV    | (LAddr + Const), rX | BB = LAddr >> 0x10, mem[LAddr + Const] = rX
