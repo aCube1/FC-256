@@ -1,0 +1,25 @@
+Virtual FC-256 Memory Layout
+
+Memory:
+* The CPU has (virtually) a 24-bit address bus, which allow 16MiB of
+addressable memory.
+* When addressing an 24-bit memory address, the CPU will store the first byte
+on the DB register.
+Example: MOV rX, (0x246924)
+- The CPU will store the extra byte(0x24) on the DB register, access
+the address 0x6924 on Bank 0x24 and store the data on the rX register.
+
+Map:
+   Banks   |     Range     | Name
+ 0x00-0x1f | 0x0000-0xffff | RESERVED
+ 0x20-0x3f | 0x0000-0xffff | RAM
+ 0x40-0xff | 0x0000-0xffef | ROM
+ 0xff-0xff | 0xfff0-0xffff | Vectors
+
+Interrupt vectors addressess:
+Address |    Name   | Description
+ 0xfff0 | Div. Zero | Division by Zero
+ 0xfff3 | Unused    | RESERVED
+ 0xfff6 | NMI       | Non-Maskable Interrupt
+ 0xfff9 | IRQ       | Interrupt Request
+ 0xfffc | Reset     | PowerUp/Reset
