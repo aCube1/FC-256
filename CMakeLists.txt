@@ -16,14 +16,16 @@ target_compile_features(
 target_sources(
 	${PROJECT_NAME}
 	PRIVATE
-		src/main.c
 		src/log/log.c
+		src/cpu.c
+		src/main.c
 )
 
 target_precompile_headers(
 	${PROJECT_NAME}
 	PRIVATE
 		include/log/log.h
+		include/types.h
 )
 
 target_include_directories(

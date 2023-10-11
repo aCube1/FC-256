@@ -1,9 +1,18 @@
-#include "log/log.h"
+#include "cpu.h"
 
-#include <stdio.h>
+#include <stdlib.h>
 
 int main(void) {
-	log_info("Hello FC-256!");
+	CPU cpu = { 0 };
+	cpuPowerUp(&cpu, "");
+	cpuMemWrite(&cpu, 0x400000, 0x00);
+	cpuMemWrite(&cpu, 0x400001, 0x80);
+	cpuMemWrite(&cpu, 0x400002, 0xff);
 
-	return 0;
+	cpuReset(&cpu);
+
+	log_debug("PC: %#x BB: %#x", cpu.reg_pc, cpu.program_bank);
+
+	cpuShutdown(&cpu);
+	return EXIT_SUCCESS;
 }
