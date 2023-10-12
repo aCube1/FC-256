@@ -2,10 +2,10 @@
 
 #include <stdlib.h>
 
-#define RESET_VECTOR   (u32)(0x400000)
-#define IRQ_VECTOR     (u32)(0x400003)
-#define NMI_VECTOR     (u32)(0x400006)
-#define DIVZERO_VECTOR (u32)(0x40000c)
+#define RESET_VECTOR   ((u32)0x400000)
+#define IRQ_VECTOR     ((u32)0x400003)
+#define NMI_VECTOR     ((u32)0x400006)
+#define DIVZERO_VECTOR ((u32)0x40000c)
 
 void cpuPowerUp(CPU *cpu, const char *file) {
 	(void)file;
@@ -16,17 +16,14 @@ void cpuPowerUp(CPU *cpu, const char *file) {
 	cpu->ram = (u8 *)calloc(RAM_SIZE, sizeof(u8));
 
 	/* Reset general registers */
-	cpu->rA = 0x0000;
-	cpu->rB = 0x0000;
-	cpu->rC = 0x0000;
-	cpu->rX = 0x0000;
-	cpu->rY = 0x0000;
-	cpu->rZ = 0x0000;
+	for (u8 i = 0; i < REG_LENGHT; i += 1) {
+		cpu->regs[i] = 0x0000;
+	}
 }
 
 void cpuReset(CPU *cpu) {
 	/* Jump to reset routine */
-	cpu->reg_pc = cpuMemRead16(cpu, RESET_VECTOR);
+	cpu->regs[REG_PC] = cpuMemRead16(cpu, RESET_VECTOR);
 	cpu->program_bank = cpuMemRead(cpu, RESET_VECTOR + 2);
 }
 

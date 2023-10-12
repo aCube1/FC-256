@@ -5,15 +5,25 @@
 
 #define RAM_SIZE (u32)(0xffffff + 1) /* NOTE: RAM Size has 16MiB of addressable memory. */
 
+/* clang-format off */
+enum Registers {
+	REG_0, REG_1, REG_2, REG_3,
+	REG_A, REG_B, REG_C, REG_D,
+	REG_E, REG_F,
+	REG_W, REG_X, REG_Y, REG_Z,
+
+	REG_PC, /* Program Counter */
+	REG_SP, /* Stack Pointer */
+	REG_LENGHT,
+};
+
+/* clang-format on */
+
 typedef struct CPU {
 	u8 *ram;
 
 	/* General Registers */
-	u16 rA, rB, rC;
-	u16 rX, rY, rZ;
-
-	u16 reg_pc; /* Program Counter */
-	u16 reg_sp; /* Stack Pointer */
+	u16 regs[REG_LENGHT];
 
 	u8 program_bank; /* Program Bank */
 	u8 data_bank;    /* Data Bank */
@@ -30,18 +40,6 @@ typedef struct CPU {
 
 		u8 raw;
 	} status;
-
-	union {
-		struct {
-			u8 identifier : 6;
-			u8 reg_count : 2;
-			u8 access_mode : 2;
-			u8 address_mode : 5;
-			u8 : 2; /* Unused */
-		};
-
-		u16 raw;
-	} current_opcode;
 } CPU;
 
 void cpuPowerUp(CPU *cpu, const char *file);

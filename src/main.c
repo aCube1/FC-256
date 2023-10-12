@@ -11,7 +11,7 @@ int main(void) {
 
 	cpuReset(&cpu);
 
-	log_debug("PC: %#x BB: %#x", cpu.reg_pc, cpu.program_bank);
+	log_debug("PC: %#x BB: %#x", cpu.regs[REG_PC], cpu.program_bank);
 
 	cpuShutdown(&cpu);
 	return EXIT_SUCCESS;
