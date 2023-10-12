@@ -6,46 +6,69 @@ Endianess: Little-Endian
 -----------------------------------------------------------------------------------------
 
 Instruction specification:
-- Instruction: <mnemonic>['H|'L] [operands]
-- format: 0AAAAASS-CCIIIIII
-	- IIIIII: 6-bits opcode identifier;
-	- CC: 2-bits register count;
-		- 0b00: No Register;
-		- 0b01: 1 Register;
-		- 0b10: 2 Registers;
-		- 0b11: INVALID.
-	- SS: 2-bit access mode;
-		- 0b00: Word;
-		- 0b01: Low Byte;
-		- 0b10: High Byte;
-		- 0b11: INVALID.
-	- AAAAA: 5-bits address mode.
+- Instruction: <mnemonic> [[operand['H|'L]], [operand['H|'L]]]
+- format: 0CCSSSAA-AAAIIIII
+ - IIIII: 5-bits opcode identifier;
+ - AAAAA: 5-bits address mode;
+ - SSS: 3-bit access mode;
+ - CC: 2-bits register count.
+  - 0b00: No Registers;
+  - 0b01: 1 Register;
+  - 0b10: 2 Registers;
+  - 0b11: INVALID.
 
-* Instructions can access the High or Low byte from operands using 'L or 'H postfixes.
-Only the High or Low byte can be accessed, it's impossible to access High byte from
-1st operand, and the Low byte from 2nd operand, or vice-versa.
+Access Modes:
+* Instructions can access the High or Low byte from operands using 'H or 'L postfixes.
+ Code | First | Second
+ 0x00 | NOREG | NOREG
+ 0x01 | Word  | Word
+ 0x02 | Low   | Low
+ 0x03 | Low   | High
+ 0x04 | High  | High
+ 0x05 | High  | Low
+ 0x06 | UNDEF | UNDEF
+ 0x07 | UNDEF | UNDEF
 
-General registers: Can be accessed as operands. If the operand has registers,
-then an extra byte after instruction specify the selection.
-- 0x00 > 0x05: rA rB rC rX rY rZ = Data and address.
-- 0x06: PC = Program counter;
-- 0x07: SP = Stack pointer.
+* Example: MOV rX'L, 0x4269'H
+ This will store the High byte from 0x4269 (0x42) on the Low byte of register rX.
+
+General registers:
+* Can be accessed as operands. If the operand has registers, then an extra byte
+after instruction specify the selection.
+Nibble | Name | Usage
+0b0000 |  r0  | Data and Address
+0b0001 |  r1  | Data and Address
+0b0010 |  r2  | Data and Address
+0b0011 |  r3  | Data and Address
+0b0100 |  rA  | Data and Address
+0b0101 |  rB  | Data and Address
+0b0110 |  rC  | Data and Address
+0b0111 |  rD  | Data and Address
+0b1000 |  rE  | Data and Address
+0b1001 |  rF  | Data and Address
+0b1010 |  rW  | Data and Address
+0b1011 |  rX  | Data and Address
+0b1100 |  rY  | Data and Address
+0b1101 |  rZ  | Data and Address
+0b1110 |  PC  | Program counter
+0b1111 |  SP  | Stack pointer
 
 * All registers are 16-bits wide.
-* If the operand contains more than 1 register, the lower nibble specify
-the first register, and the high nibble specify the second register.
-* Example: MOV rX, rZ
-	The register count is 2, rX=0x03 and rZ=0x05, so the extra byte is 0x53.
+* If the operand contains more than 1 register, the lower nibble specify the
+first register, and the high nibble specify the second register.
+* Example: MOV r2, rA
+ The register count is 2, r2=0x02 and rA=0x04, so the extra byte is 0x42.
 
-Internal registers: Cannot be accessed as operands
+Internal registers:
+* Cannot be accessed as operands
 - BB: Program bank (256 banks);
 - DB: Data bank (256 banks);
 - P: Program status (---IOCNZ).
-	- I: Disable Interrupt;
-	- O: Overflow/Underflow;
-	- C: Carry;
-	- N: Negative;
-	- Z: Zero.
+ - I: Disable Interrupt;
+ - O: Overflow/Underflow;
+ - C: Carry;
+ - N: Negative;
+ - Z: Zero.
 
 * All registers are 8-bits wide.
 
