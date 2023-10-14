@@ -6,31 +6,15 @@ Endianess: Little-Endian
 -----------------------------------------------------------------------------------------
 
 Instruction specification:
-- Instruction: <mnemonic> [[operand['H|'L]], [operand['H|'L]]]
-- format: 0CCSSSAA-AAAIIIII
- - IIIII: 5-bits opcode identifier;
- - AAAAA: 5-bits address mode;
- - SSS: 3-bit access mode;
+- Instruction: <mnemonic> [operands]
+- format: 0000AAAA-CCIIIIII
+ - IIIIII: 6-bits opcode identifier;
  - CC: 2-bits register count.
   - 0b00: No Registers;
   - 0b01: 1 Register;
   - 0b10: 2 Registers;
   - 0b11: INVALID.
-
-Access Modes:
-* Instructions can access the High or Low byte from operands using 'H or 'L postfixes.
- Code | First | Second
- 0x00 | NOREG | NOREG
- 0x01 | Word  | Word
- 0x02 | Low   | Low
- 0x03 | Low   | High
- 0x04 | High  | High
- 0x05 | High  | Low
- 0x06 | UNDEF | UNDEF
- 0x07 | UNDEF | UNDEF
-
-* Example: MOV rX'L, 0x4269'H
- This will store the High byte from 0x4269 (0x42) on the Low byte of register rX.
+ - AAAA: 4-bits address mode;
 
 General registers:
 * Can be accessed as operands. If the operand has registers, then an extra byte
@@ -74,38 +58,22 @@ Internal registers:
 
 Address modes:
  Code | Name      | Operand
- 0x00 | Implied   | No Operand
- 0x01 | Relative  | Const
- 0x02 | Immediate | Const
- 0x03 | Immediate | rX, Const
- 0x04 | Register  | rX
- 0x05 | Register  | rX, rY
- 0x06 | Absolute  | (Addr)
- 0x07 | Absolute  | rX, (Addr)
- 0x08 | Absolute  | (Addr), rX
- 0x09 | Indexed   | (Addr + Const)
- 0x0a | Indexed   | rX, (Addr + Const)
- 0x0b | Indexed   | (Addr + Const), rY
- 0x0c | Indirect  | (rX)
- 0x0d | Indirect  | rX, (rY)
- 0x0e | Indirect  | (rX), rY
- 0x0f | Long Abs  | (LAddr)
- 0x10 | Long Abs  | rX, (LAddr)
- 0x11 | Long Abs  | (LAddr), rX
- 0x12 | Long Ind  | (LAddr + Const)
- 0x13 | Long Ind  | rX, (LAddr + Const)
- 0x14 | Long Ind  | (LAddr + Const), rX
- 0x15 | NoMode    | RESERVED
- 0x16 | NoMode    | RESERVED
- 0x17 | NoMode    | RESERVED
- 0x18 | NoMode    | RESERVED
- 0x19 | NoMode    | RESERVED
- 0x1a | NoMode    | RESERVED
- 0x1b | NoMode    | RESERVED
- 0x1c | NoMode    | RESERVED
- 0x1d | NoMode    | RESERVED
- 0x1e | NoMode    | RESERVED
- 0x1f | NoMode    | RESERVED
+ 0x00 | NoMode    | RESERVED
+ 0x01 | Implied   | No Operand
+ 0x02 | Relative  | Branch
+ 0x03 | Immediate | Const
+ 0x04 | Immediate | rX, Const
+ 0x05 | Register  | rX
+ 0x06 | Register  | rX, rY
+ 0x07 | Absolute  | (Addr)
+ 0x08 | Absolute  | rX, (Addr)
+ 0x09 | Absolute  | (Addr), rX
+ 0x0a | Indexed   | (Addr + Const)
+ 0x0b | Indexed   | rX, (Addr + Const)
+ 0x0c | Indexed   | (Addr + Const), rX
+ 0x0d | Indirect  | (rX)
+ 0x0e | Indirect  | rX, (rY)
+ 0x0f | Indirect  | (rX), rY
 
 Banking:
 * There are 2 registers for bank switching: BB and DB.
