@@ -1,29 +1,13 @@
-Virtual FC-256 CPU Instructions
+======== FC-256 CPU Instructions ========
+* Note: The first 6-bits are not calculated in this table.
 
-CPU instructions identifiers:
-* In the instruction word, we have 6-bits for the instruction identifier,
-which allow we have 64 (3f) possible identifiers.
-
-Descriptions:
-Code | Mnemonic | Description
-0x00 |   MOV    | A = B
-0x01 |   ADD    | A += B
-0x02 |   SUB    | A -= B
-0x03 |   MUL    | A *= B
-0x04 |   DIV    | A /= B
-0x05 |   INC    | A += 1
-0x06 |   DEC    | A -= 1
-
-Instructions:
- Code  | Mnemonic | Operand             | Execution
-0x0480 |   MOV    | rX, Const           | rX = Const
-0x0680 |   MOV    | rX, rY              | rX = rY
-0x0880 |   MOV    | rX, (Addr)          | rX = mem[Addr]
-0x0980 |   MOV    | (Addr), rX          | mem[Addr] = rX
-0x0b80 |   MOV    | rX, (Addr + Const)  | rX = mem[Addr + Const]
-0x0c80 |   MOV    | (Addr + Const), rX  | mem[Addr + Const] = rX
-0x0e80 |   MOV    | rX, (rY)            | rX = mem[rY]
-0x0f80 |   MOV    | (rX), rY            | mem[rX] = rY
-
-* Note: All addresses are 24-bits. When an address is provided, the first byte
-will be stored in the DB register.
+ Code  | Mnemonic | Address Mode | Operand          | Execution
+0x0c00 |   MOV    |   Immediate  | rX, Const        | rX = Const
+0x0140 |   MOV    |   Register   | rX, rY           | rX = rY
+0x01c0 |   MOV    |   Absolute   | (Addr), Const    | mem[Addr] = Const
+0x0200 |   MOV    |   Absolute   | rX, (Addr)       | rX = mem[Addr]
+0x0240 |   MOV    |   Absolute   | (Addr), rX       | mem[Addr] = rX
+0x02c0 |   MOV    |   Indirect   | rX, (rY)         | rX = mem[rY]
+0x0300 |   MOV    |   Indirect   | (rX), rY         | mem[rX] = rY
+0x0380 |   MOV    |   Indexed    | rX, (rY + Const) | rX = mem[rY + Const]
+0x03c0 |   MOV    |   Indexed    | (rX + Const), rY | mem[rX + Const] = rY

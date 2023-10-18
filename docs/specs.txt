@@ -1,0 +1,98 @@
+================ FC-256 CPU ================
+ Virtual 16-bit machine heavily inspired by
+ Super Nintendo Entertainment System(SNES).
+============================================
+
+======== Overview ========
+- 16-bit data width.
+- 24-bit address bus (16 MiB accessible memory).
+- Endianess: Little-Endian.
+
+======== Instruction Layout ========
+Usage: <mnemonic> [operands]
+Encoding: RRRRRRAA-AAIIIIII
+ Bit  | Symbol | Name               | Size
+00-05 |   I    | Opcode Identifier  | 6
+06-09 |   A    | Address Mode       | 4
+10-15 |   R    | Register Selection | 6
+
+======== Instructions ========
+Code | Mnemonic | Operation
+0x00 |   MOV    | A = B
+0x01 |   ADD    | A += B
+0x02 |   SUB    | A -= B
+0x03 |   ADC    | A += B + Carry
+0x04 |   SBC    | A -= B - (1 - Carry)
+0x05 |   MUL    | A *= B
+0x06 |   DIV    | A /= B
+0x07 |   INC    | A += 1
+0x08 |   DEC    | A -= 1
+
+* Note: See opcodes.txt for the Instructions codes with each address mode.
+
+======== Registers ========
+Description: Registers can be accessed as operands. There are 8 possible 16-bit
+wide registers, provided by the selector. The first and the second 3 bits of
+the selector specify the first and second Registers respectively. Making
+possible the selection of 64 combinations.
+
+ Bit  | Register | Usage            \   Bit  | Register | Usage
+0b000 |    rA    | General Purpose  /  0b100 |    rX    | General Purpose
+0b001 |    rB    | General Purpose  \  0b101 |    rY    | General Purpose
+0b010 |    rC    | General Purpose  /  0b110 |    rZ    | General Purpose
+0b011 |    PC    | Program Counter  \  0b111 |    SP    | Stack Pointer
+
+* Example: "MOV rX, rZ"
+	The selector will be read as 110100.
+
+======== Internal Registers ========
+Description: Registers cannot be accessed as operands. The CPU has 8-bit wide
+internal registers. Those registers tracks the internal state of the CPU, which
+cannot be accessed directly by the programmer.
+
+ Register |      Name      | Usage
+    PB    |  Program Bank  | Keeps track of the current bank for the
+          |                | executed instruction.
+    DB    |   Data Bank    | When an address is provided, the CPU stores
+          |                | the first byte on this register.
+    PS    | Program Status | Stores CPU status, an instruction can set or read
+          |   (---IOCNZ)   | any flag.
+
+* Description for each Program Status Flag:
+- Zero(Z): Set if the result of the last operation is 0x00.
+- Negative(N): Set if the result of the last operations has set the
+15th bit to one.
+- Carry(C): Set if the result of the last operation caused an overflow from the
+15th bit or an underflow on bit 0.
+- Overflow/Underflow(O): Set if the last signed binary operation
+overflow/underflow (e.g. Multiplying positive numbers and ending up with
+negative result: 16384 * 2 = -32768).
+- Disable Interrupt(I): If set, the processor will ignore devices interrupts
+requests(IRQ).
+
+======== Address Modes ========
+Hex  | Name      | Operand        \  Hex  | Name     | Operand
+0x00 | Implied   | No Operand     /  0x08 | Absolute | rX, (Addr)
+0x01 | Relative  | Branch         \  0x09 | Absolute | (Addr), rX
+0x02 | Immediate | Const          /  0x0a | Indirect | (rX)
+0x03 | Immediate | rX, Const      \  0x0b | Indirect | rX, (rY)
+0x04 | Register  | rX             /  0x0c | Indirect | (rX), rY
+0x05 | Register  | rX, rY         \  0x0d | Indexed  | (rX + Const)
+0x06 | Absolute  | (Addr)         /  0x0e | Indexed  | rX, (rY + Const)
+0x07 | Absolute  | (Addr), Const  \  0x0f | Indexed  | (rX + Const), rY
+
+======== Memory Layout ========
+      Range        | Name
+0x000000..0x1fffff | RESERVED
+0x200000..0x3fffff | General Purpose RAM
+0x400000..0x40000f | Interrupt Vectors
+0x400010..0xffffff | General Purpose ROM
+
+* Is recommended to use the address range 0x3d0000 to 0x3fffff as Stack Memory.
+
+======== Interrupt Vectors ========
+ Address |  Name    | Description
+0x400000 | Reset    | PowerUp/Reset
+0x400003 | IRQ      | Interrupt Request
+0x400006 | NMI      | Non-Maskable Interrupt
+0x400009 | Div.Zero | Division by Zero error
