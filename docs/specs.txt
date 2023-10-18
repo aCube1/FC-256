@@ -48,7 +48,7 @@ possible the selection of 64 combinations.
 ======== Internal Registers ========
 Description: Registers cannot be accessed as operands. The CPU has 8-bit wide
 internal registers. Those registers tracks the internal state of the CPU, which
-cannot be accessed directly by the programmer.
+can only be accessed by instructions.
 
  Register |      Name      | Usage
     PB    |  Program Bank  | Keeps track of the current bank for the
@@ -73,13 +73,13 @@ requests(IRQ).
 ======== Address Modes ========
 Hex  | Name      | Operand        \  Hex  | Name     | Operand
 0x00 | Implied   | No Operand     /  0x08 | Absolute | rX, (Addr)
-0x01 | Relative  | Branch         \  0x09 | Absolute | (Addr), rX
-0x02 | Immediate | Const          /  0x0a | Indirect | (rX)
-0x03 | Immediate | rX, Const      \  0x0b | Indirect | rX, (rY)
-0x04 | Register  | rX             /  0x0c | Indirect | (rX), rY
-0x05 | Register  | rX, rY         \  0x0d | Indexed  | (rX + Const)
-0x06 | Absolute  | (Addr)         /  0x0e | Indexed  | rX, (rY + Const)
-0x07 | Absolute  | (Addr), Const  \  0x0f | Indexed  | (rX + Const), rY
+0x01 | Relative  | Offset         \  0x09 | Indirect | (rX)
+0x02 | Immediate | rX, Const      /  0x0a | Indirect | (rX), Const
+0x03 | Register  | rX             \  0x0b | Indirect | (rX), rY
+0x04 | Register  | rX, rY         /  0x0c | Indirect | rX, (rY)
+0x05 | Absolute  | (Addr)         \  0x0d | Indexed  | (rX + Const)
+0x06 | Absolute  | (Addr), Const  /  0x0e | Indexed  | (rX + Const), rY
+0x07 | Absolute  | (Addr), rX     \  0x0f | Indexed  | rX, (rY + Const)
 
 ======== Memory Layout ========
       Range        | Name

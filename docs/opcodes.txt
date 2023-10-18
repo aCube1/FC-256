@@ -2,12 +2,13 @@
 * Note: The first 6-bits are not calculated in this table.
 
  Code  | Mnemonic | Address Mode | Operand          | Execution
-0x0c00 |   MOV    |   Immediate  | rX, Const        | rX = Const
-0x0140 |   MOV    |   Register   | rX, rY           | rX = rY
-0x01c0 |   MOV    |   Absolute   | (Addr), Const    | mem[Addr] = Const
+0x0080 |   MOV    |   Immediate  | rX, Const        | rX = Const
+0x0100 |   MOV    |   Register   | rX, rY           | rX = rY
+0x0180 |   MOV    |   Absolute   | (Addr), Const    | mem[Addr] = Const
+0x01c0 |   MOV    |   Absolute   | (Addr), rX       | mem[Addr] = rX
 0x0200 |   MOV    |   Absolute   | rX, (Addr)       | rX = mem[Addr]
-0x0240 |   MOV    |   Absolute   | (Addr), rX       | mem[Addr] = rX
-0x02c0 |   MOV    |   Indirect   | rX, (rY)         | rX = mem[rY]
-0x0300 |   MOV    |   Indirect   | (rX), rY         | mem[rX] = rY
-0x0380 |   MOV    |   Indexed    | rX, (rY + Const) | rX = mem[rY + Const]
-0x03c0 |   MOV    |   Indexed    | (rX + Const), rY | mem[rX + Const] = rY
+0x0280 |   MOV    |   Indirect   | (rX), Const      | mem[rX] = Const
+0x02c0 |   MOV    |   Indirect   | (rX), rY         | mem[rX] = rY
+0x0300 |   MOV    |   Indirect   | rX, (rY)         | rX = mem[rY]
+0x0380 |   MOV    |   Indexed    | (rX + Const), rY | mem[rX + Const] = rY
+0x03c0 |   MOV    |   Indexed    | rX, (rY + Const) | rX = mem[rY + Const]
