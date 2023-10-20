@@ -17,16 +17,16 @@ Encoding: RRRRRRAA-AAIIIIII
 10-15 |   R    | Register Selection | 6
 
 ======== Instructions ========
-Code | Mnemonic | Operation
-0x00 |   MOV    | A = B
-0x01 |   ADD    | A += B
-0x02 |   SUB    | A -= B
-0x03 |   ADC    | A += B + Carry
-0x04 |   SBC    | A -= B - (1 - Carry)
-0x05 |   MUL    | A *= B
-0x06 |   DIV    | A /= B
-0x07 |   INC    | A += 1
-0x08 |   DEC    | A -= 1
+Code | Mnemonic | Operation        | Cycles^
+0x00 |   MOV    | A = B            |   1
+0x01 |   ADD    | A += B           |   2
+0x02 |   SUB    | A -= B           |   2
+0x03 |   ADC    | A += B + C       |   2
+0x04 |   SBC    | A -= B - (1 - C) |   2
+0x05 |   MUL    | A *= B           |   2
+0x06 |   DIV    | A /= B           |   2
+0x07 |   INC    | A += 1           |   1
+0x08 |   DEC    | A -= 1           |   1
 
 * Note: See opcodes.txt for the Instructions codes with each address mode.
 
@@ -71,15 +71,19 @@ negative result: 16384 * 2 = -32768).
 requests(IRQ).
 
 ======== Address Modes ========
-Hex  | Name      | Operand        \  Hex  | Name     | Operand
-0x00 | Implied   | No Operand     /  0x08 | Absolute | rX, (Addr)
-0x01 | Relative  | Offset         \  0x09 | Indirect | (rX)
-0x02 | Immediate | rX, Const      /  0x0a | Indirect | (rX), Const
-0x03 | Register  | rX             \  0x0b | Indirect | (rX), rY
-0x04 | Register  | rX, rY         /  0x0c | Indirect | rX, (rY)
-0x05 | Absolute  | (Addr)         \  0x0d | Indexed  | (rX + Const)
-0x06 | Absolute  | (Addr), Const  /  0x0e | Indexed  | (rX + Const), rY
-0x07 | Absolute  | (Addr), rX     \  0x0f | Indexed  | rX, (rY + Const)
+Hex  | Name      | Operand       | Cycles^ \  Hex  | Name     | Operand          | Cycles^
+0x00 | Implied   | No Operand    |   0     /  0x08 | Absolute | rX, (Addr)       |   2
+0x01 | Relative  | Offset        |   1     \  0x09 | Indirect | (rX)             |   2
+0x02 | Immediate | rX, Const     |   2     /  0x0a | Indirect | (rX), Const      |   3
+0x03 | Register  | rX            |   1     \  0x0b | Indirect | (rX), rY         |   3
+0x04 | Register  | rX, rY        |   2     /  0x0c | Indirect | rX, (rY)         |   3
+0x05 | Absolute  | (Addr)        |   1     \  0x0d | Indexed  | (rX + Const)     |   3
+0x06 | Absolute  | (Addr), Const |   2     /  0x0e | Indexed  | (rX + Const), rY |   4
+0x07 | Absolute  | (Addr), rX    |   2     \  0x0f | Indexed  | rX, (rY + Const) |   4
+
+* Offset - u16
+* Const  - u16
+* Addr   - u24
 
 ======== Memory Layout ========
       Range        | Name
@@ -96,3 +100,7 @@ Hex  | Name      | Operand        \  Hex  | Name     | Operand
 0x400003 | IRQ      | Interrupt Request
 0x400006 | NMI      | Non-Maskable Interrupt
 0x400009 | Div.Zero | Division by Zero error
+
+===============================================================
+^ All cycles are arbitrary for now, there's no way that a real hardware to have
+this defined amount of cycles for each instruction.
