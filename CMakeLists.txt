@@ -19,6 +19,8 @@ target_sources(
 		src/log/log.c
 		src/cpu.c
 		src/main.c
+		src/opcode.c
+		src/operand.c
 )
 
 target_precompile_headers(
