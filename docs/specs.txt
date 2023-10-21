@@ -95,11 +95,11 @@ Hex  | Name      | Operand       | Cycles^ \  Hex  | Name     | Operand         
 * Is recommended to use the address range 0x3d0000 to 0x3fffff as Stack Memory.
 
 ======== Interrupt Vectors ========
- Address |  Name    | Description
-0x400000 | Reset    | PowerUp/Reset
-0x400003 | IRQ      | Interrupt Request
-0x400006 | NMI      | Non-Maskable Interrupt
-0x400009 | Div.Zero | Division by Zero error
+ Address |  Name    | Description            | Cycles^
+0x400000 | Reset    | PowerUp/Reset          |   8
+0x400003 | IRQ      | Interrupt Request      |   7
+0x400006 | NMI      | Non-Maskable Interrupt |   7
+0x400009 | Div.Zero | Division by Zero error |   7
 
 ===============================================================
 ^ All cycles are arbitrary for now, there's no way that a real hardware to have
