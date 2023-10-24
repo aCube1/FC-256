@@ -8,10 +8,10 @@ u32 operandGetData(CPU *cpu, Operand *op) {
 		return cpu->regs[op->reg];
 	case OT_CONSTANT:
 		return op->constant;
-	case OT_OFFSET:
-		return op->offset;
 	case OT_ADDRESS:
 		return cpuMemRead16(cpu, op->addr);
+	case OT_OFFSET:
+		return op->offset;
 	default:
 		log_error("Operand type %d is Unknown!", op->type);
 		return 0x00;

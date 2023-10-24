@@ -13,8 +13,8 @@ int main(void) {
 
 	cpuMemWrite16(&cpu, 0xff8004, 0x8900); /* MOV rC, rX */
 
-	cpuMemWrite16(&cpu, 0xff8006, 0x1080); /* MOV rX, 0x4252 */
-	cpuMemWrite16(&cpu, 0xff8008, 0x4252);
+	cpuMemWrite16(&cpu, 0xff8006, 0x1081); /* ADD rX, 0x0042 */
+	cpuMemWrite16(&cpu, 0xff8008, 0x0042);
 
 	cpuReset(&cpu);
 

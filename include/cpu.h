@@ -31,7 +31,9 @@ typedef struct CPU {
 
 	u16 regs[REGS_COUNT]; /* General Registers */
 	u32 actual_pc;        /* PB + program counter */
-	u8 data_bank;         /* Data Bank(DB) */
+
+	/* NOTE: Data Bank is not used in this emulator, but will stay here as a reference. */
+	// u8 data_bank; /* Data Bank(DB) */
 
 	union {
 		struct {

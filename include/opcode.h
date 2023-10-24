@@ -15,13 +15,13 @@ enum AddressingMode {
 	ADDR_ABS_2, /* 0x06 - Absolute  : (Addr), Const */
 	ADDR_ABS_3, /* 0x07 - Absolute  : (Addr), rX */
 	ADDR_ABS_4, /* 0x08 - Absolute  : rX, (Addr) */
-	ADDR_IND_1, /* 0x09 - Indirect  : (rX) */
-	ADDR_IND_2, /* 0x0a - Indirect  : (rX), Const */
-	ADDR_IND_3, /* 0x0b - Indirect  : (rX), rY */
-	ADDR_IND_4, /* 0x0c - Indirect  : rX, (rY) */
-	ADDR_IDX_1, /* 0x0d - Indexed   : (rX + Const) */
-	ADDR_IDX_2, /* 0x0e - Indexed   : (rX + Const), rY */
-	ADDR_IDX_3, /* 0x0f - Indexed   : rX, (rY + Const) */
+	ADDR_BNK_1, /* 0x09 - Indirect  : (Bank, rX) */
+	ADDR_BNK_2, /* 0x0a - Banked    : (Bank, rX), Const */
+	ADDR_BNK_3, /* 0x0b - Banked    : (Bank, rX), rY */
+	ADDR_BNK_4, /* 0x0c - Banked    : rX, (Bank, rY) */
+	ADDR_IDX_1, /* 0x0d - Indexed   : (Addr, rX) */
+	ADDR_IDX_2, /* 0x0e - Indexed   : (Addr, rX), rY */
+	ADDR_IDX_3, /* 0x0f - Indexed   : rX, (Addr, rY) */
 };
 
 typedef struct Opcode {
@@ -29,7 +29,7 @@ typedef struct Opcode {
 	enum AddressingMode mode;
 	u8 cycles;
 	void (*handler)(CPU *);
-	void (*addr)(CPU *, u8, u16, u16);
+	void (*addr)(CPU *, u8, u8, u8);
 } Opcode;
 
 extern const Opcode op_table[MAX_OPCODES];

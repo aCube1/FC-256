@@ -1,13 +1,15 @@
 #ifndef _OPERAND_H_
 #define _OPERAND_H_
 
+#include "types.h"
+
 struct CPU;
 
 enum OperandType {
 	OT_REGISTER,
 	OT_CONSTANT,
-	OT_OFFSET,
 	OT_ADDRESS,
+	OT_OFFSET,
 };
 
 typedef struct {
@@ -16,8 +18,8 @@ typedef struct {
 	union {
 		u8 reg;
 		u16 constant;
-		u16 offset;
 		u32 addr;
+		s16 offset;
 	};
 } Operand;
 

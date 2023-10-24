@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-#include "opcodes.h"
+#include "opcode.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +16,7 @@ void cpuPowerUp(CPU *cpu) {
 
 void cpuShutdown(CPU *cpu) {
 	free(cpu->memory);
+	cpu->memory = NULL;
 }
 
 void cpuReset(CPU *cpu) {
@@ -24,7 +25,7 @@ void cpuReset(CPU *cpu) {
 	cpu->regs[REG_PC] = cpu->actual_pc & 0xffff;
 
 	cpu->status.raw = 0xe0; /* NOTE: Always set the unused bits. */
-	cpu->data_bank = 0x00;
+	// cpu->data_bank = 0x00;
 
 	cpu->cycles = 8;
 }
