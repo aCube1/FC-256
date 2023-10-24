@@ -39,7 +39,7 @@ target_include_directories(
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set_debug_options(${PROJECT_NAME})
 else()
-	target_compile_options(${target} PRIVATE -g0 -O3)
+	target_compile_options(${PROJECT_NAME} PRIVATE -g0 -O3)
 endif()
 
 set_default_warnings(${PROJECT_NAME})
