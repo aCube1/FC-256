@@ -17,6 +17,7 @@ target_sources(
 	${PROJECT_NAME}
 	PRIVATE
 		src/log/log.c
+		src/common.c
 		src/cpu.c
 		src/main.c
 		src/opcode.c
@@ -27,6 +28,8 @@ target_precompile_headers(
 	${PROJECT_NAME}
 	PRIVATE
 		include/log/log.h
+		include/common.h
+		include/operand.h
 		include/types.h
 )
 

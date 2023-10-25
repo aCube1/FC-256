@@ -22,7 +22,7 @@ int main(void) {
 		cpuClock(&cpu);
 
 		if (cpu.cycles == 0) {
-			log_trace("PC: %#x -> rC: %#x | rX: %#x ", cpu.actual_pc, cpu.regs[REG_C], cpu.regs[REG_X]);
+			log_debug("PC: %#x -> rC: %#x | rX: %#x ", cpu.actual_pc, cpu.regs[REG_C], cpu.regs[REG_X]);
 		}
 	}
 

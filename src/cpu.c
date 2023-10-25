@@ -1,5 +1,6 @@
 #include "cpu.h"
 
+#include "common.h"
 #include "opcode.h"
 
 #include <stdlib.h>
@@ -32,12 +33,22 @@ void cpuReset(CPU *cpu) {
 
 void cpuClock(CPU *cpu) {
 	if (cpu->cycles == 0) {
-		u16 current_opcode = cpuMemRead16(cpu, cpu->actual_pc);
-
+		cpu->opcode = cpuMemRead16(cpu, cpu->actual_pc);
 		cpu->actual_pc += 2;
 		cpu->regs[REG_PC] = cpu->actual_pc & 0xffff;
 
-		opcode_execute(cpu, current_opcode);
+		u8 identifier = bitsGet(cpu->opcode, OP_IDENTIFIER_START, OP_IDENTIFIER_MASK);
+		u8 addr_mode = bitsGet(cpu->opcode, OP_ADDRMODE_START, OP_ADDRMODE_MASK);
+		if (opcode_addresses[addr_mode] != NULL) {
+			u8 first_reg = bitsGet(cpu->opcode, OP_FIRSTREG_START, OP_FIRSTREG_MASK);
+			u8 second_reg = bitsGet(cpu->opcode, OP_SECONDREG_START, OP_SECONDREG_MASK);
+
+			cpu->cycles += opcode_addresses[addr_mode](cpu, addr_mode, first_reg, second_reg);
+		}
+		if (opcode_handlers[identifier] != NULL) {
+
+			cpu->cycles += opcode_handlers[identifier](cpu);
+		}
 	}
 
 	cpu->cycles -= 1;

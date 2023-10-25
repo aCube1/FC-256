@@ -5,7 +5,7 @@
 #include "types.h"
 
 /* NOTE: RAM Size has 16MiB of addressable memory. */
-#define RAM_SIZE ((u32)0xffffff + 1)
+#define RAM_SIZE (0x1000000u)
 
 /* clang-format off */
 enum Registers {
@@ -53,6 +53,8 @@ typedef struct CPU {
 
 	Operand op1;
 	Operand op2;
+
+	u16 opcode;
 } CPU;
 
 void cpuPowerUp(CPU *cpu);
