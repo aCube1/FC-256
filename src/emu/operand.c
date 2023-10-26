@@ -1,6 +1,6 @@
-#include "operand.h"
+#include "emu/operand.h"
 
-#include "cpu.h"
+#include "emu/cpu.h"
 
 u32 operandGetData(CPU *cpu, Operand *op) {
 	switch (op->type) {

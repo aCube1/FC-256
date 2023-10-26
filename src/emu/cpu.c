@@ -1,7 +1,7 @@
-#include "cpu.h"
+#include "emu/cpu.h"
 
 #include "common.h"
-#include "opcode.h"
+#include "emu/opcode.h"
 
 #include <stdlib.h>
 #include <string.h>

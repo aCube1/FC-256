@@ -1,7 +1,7 @@
-#ifndef _CPU_OPCODES_H_
-#define _CPU_OPCODES_H_
+#ifndef _EMU_OPCODES_H_
+#define _EMU_OPCODES_H_
 
-#include "cpu.h"
+#include "emu/cpu.h"
 
 #define OPCODE_COUNT        0x40
 
@@ -61,4 +61,4 @@ u8 opcodeADD(CPU *cpu);
 // u8 opcodeINC(CPU *cpu);
 // u8 opcodeDEC(CPU *cpu);
 
-#endif /* _CPU_OPCODES_H_ */
+#endif /* _EMU_OPCODES_H_ */

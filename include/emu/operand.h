@@ -1,9 +1,9 @@
-#ifndef _OPERAND_H_
-#define _OPERAND_H_
+#ifndef _EMU_OPERAND_H_
+#define _EMU_OPERAND_H_
 
 #include "types.h"
 
-struct CPU;
+typedef struct CPU CPU;
 
 enum OperandType {
 	OT_REGISTER,
@@ -23,6 +23,6 @@ typedef struct {
 	};
 } Operand;
 
-u32 operandGetData(struct CPU *cpu, Operand *op);
+u32 operandGetData(CPU *cpu, Operand *op);
 
-#endif /* _OPERAND_H_ */
+#endif /* _EMU_OPERAND_H_ */

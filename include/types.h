@@ -1,8 +1,9 @@
-#ifndef _TYPES_HPP_
-#define _TYPES_HPP_
+#ifndef _TYPES_H_
+#define _TYPES_H_
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -16,4 +17,4 @@ typedef int64_t s64;
 
 typedef size_t usize;
 
-#endif /* _TYPES_HPP_ */
+#endif /* _TYPES_H_ */

@@ -1,7 +1,6 @@
-#include "opcode.h"
+#include "emu/opcode.h"
 
-#include "cpu.h"
-#include "operand.h"
+#include "emu/operand.h"
 
 AddrHandler opcode_addresses[ADDR_COUNT] = {
 	NULL,    addrREL, addrIMM, addrREG, addrREG, addrABS, addrABS, addrABS,

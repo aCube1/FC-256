@@ -1,7 +1,7 @@
-#ifndef _CPU_H_
-#define _CPU_H_
+#ifndef _EMU_CPU_H_
+#define _EMU_CPU_H_
 
-#include "operand.h"
+#include "emu/operand.h"
 #include "types.h"
 
 /* NOTE: RAM Size has 16MiB of addressable memory. */
@@ -71,4 +71,4 @@ void cpuMemWrite(CPU *cpu, u32 addr, u8 data);
 void cpuMemWrite16(CPU *cpu, u32 addr, u16 data);
 void cpuMemWrite24(CPU *cpu, u32 addr, u32 data);
 
-#endif /* _CPU_H_ */
+#endif /* _EMU_CPU_H_ */
