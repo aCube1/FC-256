@@ -71,15 +71,15 @@ negative result: 16384 * 2 = -32768).
 requests(IRQ).
 
 ======== Address Modes ========
-Hex  | Name      | Operand        | Cycles^ \  Hex  | Name     | Operand            | Cycles^
-0x00 | Implied   | No Operand     |   0     /  0x08 | Absolute | rX, ($Addr)        |   2
-0x01 | Relative  | -|+Offset      |   1     \  0x09 | Banked   | ($Bank, rX)        |   2
-0x02 | Immediate | rX, Const      |   2     /  0x0a | Banked   | ($Bank, rX), Const |   3
-0x03 | Register  | rX             |   1     \  0x0b | Banked   | ($Bank, rX), rY    |   3
-0x04 | Register  | rX, rY         |   2     /  0x0c | Banked   | rX, ($Bank, rY)    |   3
-0x05 | Absolute  | ($Addr)        |   1     \  0x0d | Indexed  | ($Addr, rX)        |   3
-0x06 | Absolute  | ($Addr), Const |   2     /  0x0e | Indexed  | ($Addr, rX), rY    |   4
-0x07 | Absolute  | ($Addr), rX    |   2     \  0x0f | Indexed  | rX, ($Addr, rY)    |   4
+Hex  | Name      | Operand        | Cycles^ \  Hex  | Name     | Operand          | Cycles^
+0x00 | Implied   | No Operand     |   0     /  0x08 | Absolute | rX, ($Addr)      |   2
+0x01 | Relative  | -|+Offset      |   1     \  0x09 | Banked   | (Bank:rX)        |   2
+0x02 | Immediate | rX, Const      |   2     /  0x0a | Banked   | (Bank:rX), Const |   3
+0x03 | Register  | rX             |   1     \  0x0b | Banked   | (Bank:rX), rY    |   3
+0x04 | Register  | rX, rY         |   2     /  0x0c | Banked   | rX, (Bank:rY)    |   3
+0x05 | Absolute  | ($Addr)        |   1     \  0x0d | Indexed  | ($Addr, rX)      |   3
+0x06 | Absolute  | ($Addr), Const |   2     /  0x0e | Indexed  | ($Addr, rX), rY  |   4
+0x07 | Absolute  | ($Addr), rX    |   2     \  0x0f | Indexed  | rX, ($Addr, rY)  |   4
 
 * Bank   - u8
 * Const  - u16
