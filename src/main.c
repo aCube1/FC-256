@@ -1,31 +1,41 @@
-#include "cpu.h"
+#include "asm/lex.h"
+#include "common.h"
+#include "log/log.h"
 
 #include <stdlib.h>
+#include <string.h>
 
-int main(void) {
-	CPU cpu = { 0 };
-	cpuPowerUp(&cpu);
-
-	cpuMemWrite24(&cpu, VEC_RESET, 0xff8000);
-
-	cpuMemWrite16(&cpu, 0xff8000, 0x1080); /* MOV rX, 0x6942 */
-	cpuMemWrite16(&cpu, 0xff8002, 0x6942);
-
-	cpuMemWrite16(&cpu, 0xff8004, 0x8900); /* MOV rC, rX */
-
-	cpuMemWrite16(&cpu, 0xff8006, 0x1081); /* ADD rX, 0x0042 */
-	cpuMemWrite16(&cpu, 0xff8008, 0x0042);
-
-	cpuReset(&cpu);
-
-	while (cpu.actual_pc <= 0xff8008 || cpu.cycles != 0) {
-		cpuClock(&cpu);
-
-		if (cpu.cycles == 0) {
-			log_debug("PC: %#x -> rC: %#x | rX: %#x ", cpu.actual_pc, cpu.regs[REG_C], cpu.regs[REG_X]);
-		}
+int main(int argc, char *argv[]) {
+	if (argc != 2) {
+		log_info("Usage: %s <file.asm>", argv[0]);
+		return EXIT_FAILURE;
 	}
 
-	cpuShutdown(&cpu);
+	StreamFile stream;
+	if (!fileLoad(&stream, argv[1])) {
+		log_fatal("Unable to load test assembly.");
+		return EXIT_FAILURE;
+	}
+
+	Lexer lexer;
+	lexInit(&lexer, &stream);
+
+	if (!lexScan(&lexer)) {
+		log_fatal("Cannot do lexing");
+		fileClose(&stream);
+		lexQuit(&lexer);
+		return EXIT_FAILURE;
+	}
+
+	for (size_t i = 0; i < lexer.tokens.used; i += 1) {
+		Token token = lexer.tokens.data[i];
+
+		char *keyword = strndup(token.start, token.lenght);
+		log_info("%s", keyword);
+		free(keyword);
+	}
+
+	lexQuit(&lexer);
+	fileClose(&stream);
 	return EXIT_SUCCESS;
 }
