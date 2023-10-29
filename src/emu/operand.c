@@ -2,7 +2,7 @@
 
 #include "emu/cpu.h"
 
-u32 operandGetData(CPU *cpu, Operand *op) {
+u16 operandGetData(CPU *cpu, Operand *op) {
 	switch (op->type) {
 	case OT_REGISTER:
 		return cpu->regs[op->reg];

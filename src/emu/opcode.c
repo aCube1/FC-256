@@ -2,6 +2,21 @@
 
 #include "emu/operand.h"
 
+static inline void setNegativeZero(CPU *cpu, u16 data) {
+	cpu->status = bitSet(cpu->status, STATUS_ZERO, data == 0x00);
+	cpu->status = bitSet(cpu->status, STATUS_NEGATIVE, bitGet(data, 15));
+}
+
+static inline void setCarry(CPU *cpu, u32 data) {
+	cpu->status = bitSet(cpu->status, STATUS_CARRY, data > 0xffff);
+}
+
+static inline void setOverflow(CPU *cpu, u16 data1, u16 data2, u32 result) {
+	bool is_overflow = (data1 ^ result) & (data2 ^ result) & 0x8000 != 0x00;
+
+	cpu->status = bitSet(cpu->status, STATUS_OVERFLOW, is_overflow);
+}
+
 AddrHandler opcode_addresses[ADDR_COUNT] = {
 	NULL,    addrREL, addrIMM, addrREG, addrREG, addrABS, addrABS, addrABS,
 	addrABS, addrBNK, addrBNK, addrBNK, addrBNK, addrIDX, addrIDX, addrIDX,
@@ -248,18 +263,26 @@ u8 opcodeMOV(CPU *cpu) {
 		break;
 	}
 
+	setNegativeZero(cpu, data);
+
 	return 1;
 }
 
 u8 opcodeADD(CPU *cpu) {
-	u16 data = operandGetData(cpu, &cpu->op2);
+	u16 data = operandGetData(cpu, &cpu->op1);
+	u16 add = operandGetData(cpu, &cpu->op2);
+	u32 result = data + add;
+
+	setNegativeZero(cpu, result);
+	setCarry(cpu, result);
+	setOverflow(cpu, data, add, result);
 
 	switch (cpu->op1.type) {
 	case OT_REGISTER:
-		cpu->regs[cpu->op1.reg] += data;
+		cpu->regs[cpu->op1.reg] = result;
 		break;
 	case OT_OFFSET:
-		cpuMemWrite16(cpu, cpu->op1.addr, data);
+		cpuMemWrite16(cpu, cpu->op1.addr, result);
 		break;
 	default:
 		break;

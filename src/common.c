@@ -1,13 +1,21 @@
 #include "common.h"
 
-usize bitsGet(usize data, u8 start, usize mask) {
-	return (data >> start) & mask;
+usize bitGetN(usize data, u8 pos, usize n) {
+	return (data >> pos) & n;
 }
 
-usize bitsSet(usize data, u8 start, usize mask) {
-	return data | (mask << start);
+usize bitSetN(usize data, u8 pos, usize n, bool enable) {
+	if (!enable) {
+		return data & ~(n << pos);
+	}
+
+	return data | (n << pos);
 }
 
-usize bitsUnset(usize data, u8 start, usize mask) {
-	return data & ~(mask << start);
+usize bitGet(usize data, u8 pos) {
+	return bitGetN(data, pos, 0x01);
+}
+
+usize bitSet(usize data, u8 pos, bool enable) {
+	return bitSetN(data, pos, 0x01, enable);
 }

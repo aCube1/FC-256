@@ -17,16 +17,16 @@ Encoding: RRRRRRAA-AAIIIIII
 10-15 |   R    | Register Selection | 6
 
 ======== Instructions ========
-Code | Mnemonic | Operation     | Cycles^
-0x00 |   MOV    | A = B         |   1
-0x01 |   ADD    | A += B        |   2
-0x02 |   SUB    | A -= B        |   2
-0x03 |   ADC    | A += B + C    |   2
-0x04 |   SBC    | A -= B - (~C) |   2
-0x05 |   MUL    | A *= B        |   2
-0x06 |   DIV    | A /= B        |   2
-0x07 |   INC    | A += 1        |   1
-0x08 |   DEC    | A -= 1        |   1
+Code | Mnemonic | Operation      | Cycles^ | Flags
+0x00 |   MOV    | A = B          |    1    | NZ
+0x01 |   ADD    | A += B         |    2    | OCNZ
+0x02 |   SUB    | A -= B         |    2    | OCNZ
+0x03 |   ADC    | A += B + C     |    2    | OCNZ
+0x04 |   SBC    | A -= B - 1 + C |    2    | OCNZ
+0x05 |   MUL    | A *= B         |    2    | OCNZ
+0x06 |   DIV    | A /= B         |    2    | OCNZ
+0x07 |   INC    | A += 1         |    1    | NZ
+0x08 |   DEC    | A -= 1         |    1    | NZ
 
 * Note: See opcodes.txt for the Instructions codes with each address mode.
 

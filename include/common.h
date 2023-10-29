@@ -3,8 +3,10 @@
 
 #include "types.h"
 
-usize bitsGet(usize data, u8 start, usize mask);
-usize bitsSet(usize data, u8 start, usize mask);
-usize bitsUnset(usize data, u8 start, usize mask);
+usize bitGetN(usize data, u8 pos, usize n);
+usize bitSetN(usize data, u8 pos, usize n, bool enable);
+
+inline usize bitGet(usize data, u8 pos);
+inline usize bitSet(usize data, u8 pos, bool enable);
 
 #endif /* _COMMON_H_ */

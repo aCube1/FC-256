@@ -23,6 +23,6 @@ typedef struct {
 	};
 } Operand;
 
-u32 operandGetData(CPU *cpu, Operand *op);
+u16 operandGetData(CPU *cpu, Operand *op);
 
 #endif /* _EMU_OPERAND_H_ */
