@@ -250,7 +250,7 @@ u8 addrIDX(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
 }
 
 u8 opcodeMOV(CPU *cpu) {
-	u16 data = operandGetData(cpu, &cpu->op2);
+	u16 data = operandUnwrap(cpu, &cpu->op2);
 
 	switch (cpu->op1.type) {
 	case OT_REGISTER:
@@ -269,8 +269,8 @@ u8 opcodeMOV(CPU *cpu) {
 }
 
 u8 opcodeADD(CPU *cpu) {
-	u16 data = operandGetData(cpu, &cpu->op1);
-	u16 add = operandGetData(cpu, &cpu->op2);
+	u16 data = operandUnwrap(cpu, &cpu->op1);
+	u16 add = operandUnwrap(cpu, &cpu->op2);
 	u32 result = data + add;
 
 	setNegativeZero(cpu, result);
