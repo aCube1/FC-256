@@ -65,8 +65,8 @@ can only be accessed by instructions.
 - Carry(C): Set if the result of the last operation caused an overflow from the
 15th bit or an underflow on bit 0.
 - Overflow/Underflow(O): Set if the last signed binary operation
-overflow/underflow (e.g. Multiplying positive numbers and ending up with
-negative result: 16384 * 2 = -32768).
+overflow/underflow (e.g. Adding positive numbers and ending up with
+negative result: 32767 + 1 = -32768).
 - Disable Interrupt(I): If set, the processor will ignore devices interrupts
 requests(IRQ).
 
