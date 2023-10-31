@@ -15,7 +15,7 @@ typedef struct {
 static const char *level_names[] = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 static const char *level_color[] = { "\x1b[94m", "\x1b[32m", "\x1b[36m", "\x1b[33m", "\x1b[31m", "\x1b[35m" };
 
-static void print_stdout(LogData *data) {
+static void printMessage(LogData *data) {
 	char buf[16];
 	buf[strftime(buf, sizeof(buf), "%H:%M:%S", data->time)] = '\0';
 
@@ -31,7 +31,7 @@ static void print_stdout(LogData *data) {
 	/* NOLINTEND(cert-err33-c) */
 }
 
-void log_message(int level, const char *file, int line, const char *fmt, ...) {
+void logMessage(int level, const char *file, int line, const char *fmt, ...) {
 	LogData data = {
 		.fmt = fmt,
 		.file = file,
@@ -46,6 +46,6 @@ void log_message(int level, const char *file, int line, const char *fmt, ...) {
 	}
 
 	va_start(data.args, fmt);
-	print_stdout(&data);
+	printMessage(&data);
 	va_end(data.args);
 }

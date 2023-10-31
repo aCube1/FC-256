@@ -26,27 +26,23 @@ enum SystemVectors {
 	VEC_DIVZERO = 0x400009,
 };
 
+enum StatusBitPosition {
+	STATUS_ZERO = 0,  /* 0000-000x -> Zero */
+	STATUS_NEGATIVE,  /* 0000-00x0 -> Negative */
+	STATUS_CARRY,     /* 0000-0x00 -> Carry */
+	STATUS_OVERFLOW,  /* 0000-x000 -> Overflow/Underflow */
+	STATUS_INTERRUPT, /* 000x-0000 -> Disable interrupt */
+};
+
 typedef struct CPU {
 	u8 *memory;
 
+	u8 status;            /* Status register */
 	u16 regs[REGS_COUNT]; /* General Registers */
 	u32 actual_pc;        /* PB + program counter */
 
 	/* NOTE: Data Bank is not used in this emulator, but will stay here as a reference. */
 	// u8 data_bank; /* Data Bank(DB) */
-
-	union {
-		struct {
-			u8 Z : 1; /* Zero */
-			u8 N : 1; /* Negative */
-			u8 C : 1; /* Carry */
-			u8 O : 1; /* Overflow/Underflow */
-			u8 I : 1; /* Disable Interrupt */
-			u8 U : 3; /* Unused */
-		};
-
-		u8 raw;
-	} status; /* Status register */
 
 	/* Internal private data */
 	u16 cycles;

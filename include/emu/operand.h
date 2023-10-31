@@ -23,6 +23,14 @@ typedef struct {
 	};
 } Operand;
 
-u32 operandGetData(CPU *cpu, Operand *op);
+/*!
+ * Unwrap operand struct and return data.
+ *
+ * @param cpu Reference to CPU struct.
+ * @param op  Operand to unwrap.
+ *
+ * @return Unwrapped data.
+ */
+u16 operandUnwrap(CPU *cpu, Operand *op);
 
 #endif /* _EMU_OPERAND_H_ */

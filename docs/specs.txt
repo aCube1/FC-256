@@ -17,16 +17,16 @@ Encoding: RRRRRRAA-AAIIIIII
 10-15 |   R    | Register Selection | 6
 
 ======== Instructions ========
-Code | Mnemonic | Operation     | Cycles^
-0x00 |   MOV    | A = B         |   1
-0x01 |   ADD    | A += B        |   2
-0x02 |   SUB    | A -= B        |   2
-0x03 |   ADC    | A += B + C    |   2
-0x04 |   SBC    | A -= B - (~C) |   2
-0x05 |   MUL    | A *= B        |   2
-0x06 |   DIV    | A /= B        |   2
-0x07 |   INC    | A += 1        |   1
-0x08 |   DEC    | A -= 1        |   1
+Code | Mnemonic | Operation      | Cycles^ | Flags
+0x00 |   MOV    | A = B          |    1    | NZ
+0x01 |   ADD    | A += B         |    2    | OCNZ
+0x02 |   SUB    | A -= B         |    2    | OCNZ
+0x03 |   ADC    | A += B + C     |    2    | OCNZ
+0x04 |   SBC    | A -= B - 1 + C |    2    | OCNZ
+0x05 |   MUL    | A *= B         |    2    | OCNZ
+0x06 |   DIV    | A /= B         |    2    | OCNZ
+0x07 |   INC    | A += 1         |    1    | NZ
+0x08 |   DEC    | A -= 1         |    1    | NZ
 
 * Note: See opcodes.txt for the Instructions codes with each address mode.
 
@@ -65,8 +65,8 @@ can only be accessed by instructions.
 - Carry(C): Set if the result of the last operation caused an overflow from the
 15th bit or an underflow on bit 0.
 - Overflow/Underflow(O): Set if the last signed binary operation
-overflow/underflow (e.g. Multiplying positive numbers and ending up with
-negative result: 16384 * 2 = -32768).
+overflow/underflow (e.g. Adding positive numbers and ending up with
+negative result: 32767 + 1 = -32768).
 - Disable Interrupt(I): If set, the processor will ignore devices interrupts
 requests(IRQ).
 

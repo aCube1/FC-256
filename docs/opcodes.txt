@@ -1,25 +1,25 @@
 ======== FC-256 CPU Instructions ========
 * Note: The last 6-bits are not calculated in this table.
 
-Code  | Mnemonic | Address Mode | Operand           | Execution             | Cycles^
-0x080 |   MOV    |   Immediate  | rX, Const         | rX = Const            |   3
-0x100 |   MOV    |   Register   | rX, rY            | rX = rY               |   3
-0x180 |   MOV    |   Absolute   | ($Addr), Const    | mem[Addr] = Const     |   3
-0x1c0 |   MOV    |   Absolute   | ($Addr), rX       | mem[Addr] = rX        |   3
-0x200 |   MOV    |   Absolute   | rX, ($Addr)       | rX = mem[Addr]        |   3
-0x280 |   MOV    |   Banked     | ($Bank:rX), Const | mem[BK + rX] = Const  |   4
-0x2c0 |   MOV    |   Banked     | ($Bank:rX), rY    | mem[BK + rX] = rY     |   4
-0x300 |   MOV    |   Banked     | rX, ($Bank:rY)    | rX = mem[BK + rY]     |   4
-0x380 |   MOV    |   Indexed    | ($Addr, rX), rY   | mem[Addr + rX] = rY   |   5
-0x3c0 |   MOV    |   Indexed    | rX, ($Addr, rX)   | rX = mem[Addr + rX]   |   5
+Code  | Mnemonic | Address Mode | Execution             | Cycles^
+0x080 |   MOV    |   Immediate  | rX = Const            |   3
+0x100 |   MOV    |   Register   | rX = rY               |   3
+0x180 |   MOV    |   Absolute   | mem[Addr] = Const     |   3
+0x1c0 |   MOV    |   Absolute   | mem[Addr] = rX        |   3
+0x200 |   MOV    |   Absolute   | rX = mem[Addr]        |   3
+0x280 |   MOV    |   Banked     | mem[BK + rX] = Const  |   4
+0x2c0 |   MOV    |   Banked     | mem[BK + rX] = rY     |   4
+0x300 |   MOV    |   Banked     | rX = mem[BK + rY]     |   4
+0x380 |   MOV    |   Indexed    | mem[Addr + rX] = rY   |   5
+0x3c0 |   MOV    |   Indexed    | rX = mem[Addr + rX]   |   5
 
-0x081 |   ADD    |   Immediate  | rX, Const         | rX += Const           |   4
-0x101 |   ADD    |   Register   | rX, rY            | rX += rY              |   4
-0x181 |   ADD    |   Absolute   | ($Addr), Const    | mem[Addr] += Const    |   4
-0x1c1 |   ADD    |   Absolute   | ($Addr), rX       | mem[Addr] += rX       |   4
-0x201 |   ADD    |   Absolute   | rX, ($Addr)       | rX += mem[Addr]       |   4
-0x281 |   ADD    |   Banked     | ($Bank:rX), Const | mem[DB + rX] += Const |   5
-0x2c1 |   ADD    |   Banked     | ($Bank:rX), rY    | mem[DB + rX] += rY    |   5
-0x301 |   ADD    |   Banked     | rX, ($Bank:rY)    | rX += mem[DB + rY]    |   5
-0x381 |   ADD    |   Indexed    | ($Addr + rX), rY  | mem[Addr + rX] += rY  |   6
-0x3c1 |   ADD    |   Indexed    | rX, ($Addr + rY)  | rX += mem[Addr + rY]  |   6
+0x081 |   ADD    |   Immediate  | rX += Const           |   4
+0x101 |   ADD    |   Register   | rX += rY              |   4
+0x181 |   ADD    |   Absolute   | mem[Addr] += Const    |   4
+0x1c1 |   ADD    |   Absolute   | mem[Addr] += rX       |   4
+0x201 |   ADD    |   Absolute   | rX += mem[Addr]       |   4
+0x281 |   ADD    |   Banked     | mem[BK + rX] += Const |   5
+0x2c1 |   ADD    |   Banked     | mem[BK + rX] += rY    |   5
+0x301 |   ADD    |   Banked     | rX += mem[BK + rY]    |   5
+0x381 |   ADD    |   Indexed    | mem[Addr + rX] += rY  |   6
+0x3c1 |   ADD    |   Indexed    | rX += mem[Addr + rY]  |   6

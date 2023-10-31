@@ -2,16 +2,24 @@
 
 #include "log/log.h"
 
-usize bitsGet(usize data, u8 start, usize mask) {
-	return (data >> start) & mask;
+usize bitGetN(usize data, u8 pos, usize mask) {
+	return (data >> pos) & mask;
 }
 
-usize bitsSet(usize data, u8 start, usize mask) {
-	return data | (mask << start);
+usize bitSetN(usize data, u8 pos, usize mask, bool enable) {
+	if (!enable) {
+		return data & ~(mask << pos);
+	}
+
+	return data | (mask << pos);
 }
 
-usize bitsUnset(usize data, u8 start, usize mask) {
-	return data & ~(mask << start);
+usize bitGet(usize data, u8 pos) {
+	return bitGetN(data, pos, 0x01);
+}
+
+usize bitSet(usize data, u8 pos, bool enable) {
+	return bitSetN(data, pos, 0x01, enable);
 }
 
 int fileLoad(StreamFile *file, const char *path) {

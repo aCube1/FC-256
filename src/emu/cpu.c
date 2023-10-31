@@ -25,7 +25,7 @@ void cpuReset(CPU *cpu) {
 	cpu->actual_pc = cpuMemRead24(cpu, VEC_RESET);
 	cpu->regs[REG_PC] = cpu->actual_pc & 0xffff;
 
-	cpu->status.raw = 0xe0; /* NOTE: Always set the unused bits. */
+	cpu->status = 0xe0; /* NOTE: Always set the unused bits. */
 	// cpu->data_bank = 0x00;
 
 	cpu->cycles = 8;
@@ -37,11 +37,11 @@ void cpuClock(CPU *cpu) {
 		cpu->actual_pc += 2;
 		cpu->regs[REG_PC] = cpu->actual_pc & 0xffff;
 
-		u8 identifier = bitsGet(cpu->opcode, OP_IDENTIFIER_START, OP_IDENTIFIER_MASK);
-		u8 addr_mode = bitsGet(cpu->opcode, OP_ADDRMODE_START, OP_ADDRMODE_MASK);
+		u8 identifier = bitGetN(cpu->opcode, OP_IDENTIFIER_START, OP_IDENTIFIER_MASK);
+		u8 addr_mode = bitGetN(cpu->opcode, OP_ADDRMODE_START, OP_ADDRMODE_MASK);
 		if (opcode_addresses[addr_mode] != NULL) {
-			u8 first_reg = bitsGet(cpu->opcode, OP_FIRSTREG_START, OP_FIRSTREG_MASK);
-			u8 second_reg = bitsGet(cpu->opcode, OP_SECONDREG_START, OP_SECONDREG_MASK);
+			u8 first_reg = bitGetN(cpu->opcode, OP_FIRSTREG_START, OP_FIRSTREG_MASK);
+			u8 second_reg = bitGetN(cpu->opcode, OP_SECONDREG_START, OP_SECONDREG_MASK);
 
 			cpu->cycles += opcode_addresses[addr_mode](cpu, addr_mode, first_reg, second_reg);
 		}
