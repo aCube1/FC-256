@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#define MAX_IDENTIFIER_LENGHT 1024
+#define MAX_IDENTIFIER_LENGHT 1024 + 1
 
 typedef struct KeywordToken {
 	char *keyword;
@@ -42,7 +42,7 @@ static inline bool isIdentifierChar(char c) {
 }
 
 /* Get character in current + N without changing index */
-static inline char peekn(Lexer *lex, size_t n) {
+static inline char peekn(Lexer *lex, usize n) {
 	return lex->stream->data[lex->index + n];
 }
 
@@ -61,16 +61,16 @@ static void next(Lexer *lex) {
 	lex->col += 1;
 }
 
-static int matchKeyword(Lexer *lex, char *start, size_t lenght) {
+static int matchKeyword(Lexer *lex, char *start, usize lenght) {
 	char keyword[MAX_IDENTIFIER_LENGHT] = { 0 };
 	strncpy(keyword, start, lenght);
 
 	/* Keywords are case insensitive, so we must set all characters to lowercase. */
-	for (size_t i = 0; i < lenght; i += 1) {
+	for (usize i = 0; i < lenght; i += 1) {
 		keyword[i] = tolower(keyword[i]);
 	}
 
-	for (size_t i = 0; s_keywords[i].type != TOK_NONE; i += 1) {
+	for (usize i = 0; s_keywords[i].type != TOK_NONE; i += 1) {
 		if (strncmp(keyword, s_keywords[i].keyword, lenght) == 0) {
 			Token token = {
 				.type = s_keywords[i].type,
@@ -87,14 +87,10 @@ static int matchKeyword(Lexer *lex, char *start, size_t lenght) {
 }
 
 static int matchIdentifier(Lexer *lex) {
-	if (!isIdentifierInitChar(peek(lex))) {
-		return 2; /* Cannot be treated as identifier */
-	}
-
 	char *start = lex->stream->data + lex->index;
-	size_t lenght = 0;
-	size_t start_col = lex->col;
-	size_t start_line = lex->line;
+	usize lenght = 0;
+	usize start_col = lex->col;
+	usize start_line = lex->line;
 
 	/* Get identifier lenght. */
 	while (isIdentifierChar(peek(lex))) {
@@ -120,11 +116,7 @@ static int matchIdentifier(Lexer *lex) {
 static int matchSymbol(Lexer *lex) {
 	char c = peek(lex);
 
-	if (!ispunct(c)) {
-		return 2; /* The character cannot be treated as a symbol. */
-	}
-
-	for (size_t i = 0; s_single_symbols[i].symbol != '\0'; i += 1) {
+	for (usize i = 0; s_single_symbols[i].symbol != '\0'; i += 1) {
 		if (c == s_single_symbols[i].symbol) {
 			Token token = {
 				.type = s_single_symbols[i].type,
@@ -178,12 +170,16 @@ int lexScan(Lexer *lex) {
 			}
 			break;
 		default:
-			if (matchIdentifier(lex) && matchSymbol(lex)) {
-				break;
+			if (isIdentifierInitChar(c)) {
+				matchIdentifier(lex);
+			} else if (ispunct(c)) {
+				matchSymbol(lex);
+			} else {
+				tokenlistFree(&lex->tokens);
+				return 0;
 			}
 
-			tokenlistFree(&lex->tokens);
-			return 0;
+			break;
 		}
 
 		next(lex);

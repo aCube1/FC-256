@@ -5,7 +5,7 @@
 
 typedef struct StreamFile {
 	char *data;
-	size_t lenght;
+	usize lenght;
 } StreamFile;
 
 /*!

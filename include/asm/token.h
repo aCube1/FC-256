@@ -19,7 +19,7 @@ typedef enum TokenType {
 	TOK_RX, TOK_RY, TOK_RZ,
 
 	/* Literals */
-	TOK_BYTE, TOK_WORD,
+	TOK_CONSTANT,
 
 	/* End-of-file */
 	TOK_EOF,
@@ -30,20 +30,32 @@ typedef enum TokenType {
 typedef struct Token {
 	TokenType type;
 	char *start;
-	size_t lenght;
+	usize lenght;
 } Token;
 
 typedef struct TokenList {
 	Token *data;
 
 	/* Internal Private Data */
-	size_t used;
-	size_t size;
+	usize used;
+	usize size;
 } TokenList;
 
-void tokenlistCreate(TokenList *list, size_t size);
+/*!
+ * Initialize TokenList struct memory.
+ *
+ * @param list Reference to the TokenList struct.
+ * @param size Initial size to the list.
+ */
+void tokenlistCreate(TokenList *list, usize size);
 void tokenlistFree(TokenList *list);
 
+/*!
+ * Insert Token element into the list.
+ *
+ * @param list    Reference to the TokenList struct.
+ * @param element Token to insert.
+ */
 void tokenlistInsert(TokenList *list, Token element);
 
 #endif /* _ASM_TOKEN_H_ */

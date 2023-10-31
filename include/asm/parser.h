@@ -6,10 +6,7 @@
 #include <stdlib.h>
 
 typedef struct ParserState {
-	FILE *file;
-
-	size_t line;
-	size_t collum;
+	StreamFile *file;
 } ParserState;
 
 #endif /* _ASM_PARSER_H_ */

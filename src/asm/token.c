@@ -1,6 +1,6 @@
 #include "asm/token.h"
 
-void tokenlistCreate(TokenList *list, size_t size) {
+void tokenlistCreate(TokenList *list, usize size) {
 	if (size <= 1) {
 		list->data = NULL;
 		log_error("data list size cannot be less than 2.");
