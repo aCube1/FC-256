@@ -4,5 +4,5 @@ $(+ -) ; Ignore me too!!
 
 
 mov
-MOV
-mOv
+
+0x6942

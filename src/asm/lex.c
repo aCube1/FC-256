@@ -1,190 +1,309 @@
 #include "asm/lex.h"
 
+#include "common.h"
+
+#include <assert.h>
 #include <ctype.h>
+#include <errno.h>
+#include <inttypes.h>
+#include <stdnoreturn.h>
 #include <string.h>
 
-#define MAX_IDENTIFIER_LENGHT 1024 + 1
+static const char *tokens[] = {
+	/* Instructions */
+	[TOK_ADD] = "add",
+	[TOK_ADC] = "adc",
+	[TOK_DEC] = "dec",
+	[TOK_DIV] = "div",
+	[TOK_INC] = "inc",
+	[TOK_MOV] = "mov",
+	[TOK_MUL] = "mul",
+	[TOK_SBC] = "sbc",
+	[TOK_SUB] = "sub",
 
-typedef struct KeywordToken {
-	char *keyword;
-	TokenType type;
-} KeywordToken;
+	/* Registers */
+	[TOK_RA] = "ra",
+	[TOK_RB] = "rb",
+	[TOK_RC] = "rc",
+	[TOK_RX] = "rx",
+	[TOK_RY] = "ry",
+	[TOK_RZ] = "rz",
 
-typedef struct SingleSymbolToken {
-	char symbol;
-	TokenType type;
-} SingleSymbolToken;
-
-static const KeywordToken s_keywords[] = {
-	{ "mov", TOK_MOV }, { "add", TOK_ADD }, { "sub", TOK_SUB }, { "adc", TOK_ADC }, { "sbc", TOK_SBC },
-	{ "div", TOK_DIV }, { "inc", TOK_INC }, { "dec", TOK_DEC }, { "ra", TOK_RA },   { "rb", TOK_RB },
-	{ "rc", TOK_RC },   { "rx", TOK_RX },   { "ry", TOK_RY },   { "rz", TOK_RZ },   { "\0", TOK_NONE },
+	/* Symbols */
+	[TOK_LPAREN] = "(",
+	[TOK_RPAREN] = ")",
+	[TOK_COMMA] = ",",
+	[TOK_DOLLAR] = "$",
+	[TOK_COLON] = ":",
+	[TOK_PLUS] = "+",
+	[TOK_MINUS] = "-",
 };
 
-static const SingleSymbolToken s_single_symbols[] = {
-	{ '(', TOK_LEFT_PAREN }, { ')', TOK_RIGHT_PAREN }, { ',', TOK_COMMA }, { '$', TOK_DOLLAR },
-	{ ':', TOK_COLON },      { '+', TOK_PLUS },        { '-', TOK_MINUS }, { '\0', TOK_NONE },
-};
+static_assert(
+	sizeof(tokens) / sizeof(const char *) == TOK_LAST_SYMBOL + 1,
+	"Tokens array doesn't have the same size of Tokens Enum."
+);
 
-/* Return true if is a space or tab */
-// static inline bool isSpace(char c) {
-// 	return c == ' ' || c == '\t';
-// }
-
-/* Return true if char is a Letter or a Underline. */
-static inline bool isIdentifierInitChar(char c) {
-	return isalpha(c) || c == '_';
+static inline bool isSpace(char c) {
+	return c == '\t' || c == '\n' || c == ' ';
 }
 
-/* Return true if char is a Letter, Underline or Number. */
-static inline bool isIdentifierChar(char c) {
-	return isIdentifierInitChar(c) || isdigit(c);
+static noreturn void error(Location loc, const char *fmt, ...) {
+	va_list args;
+
+	/* NOLINTBEGIN(cert-err33-c) */
+	fprintf(stderr, "%zd - %zd:%zd ", loc.fileid, loc.lineno, loc.colno);
+
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+
+	fprintf(stderr, "\n");
+	/* NOLINTEND(cert-err33-c) */
+
+	exit(EXIT_FAILURE);
 }
 
-/* Get character in current + N without changing index */
-static inline char peekn(Lexer *lex, usize n) {
-	return lex->stream->data[lex->index + n];
-}
-
-/* Get index character without changing index */
-static inline char peek(Lexer *lex) {
-	return peekn(lex, 0);
-}
-
-/* Change index to the next character */
-static void next(Lexer *lex) {
-	if (peekn(lex, 0) == '\0') {
-		return; /* Don't go past the Null Terminator */
+static void appendBuffer(Lexer *lex, const char *buf, usize size) {
+	if (lex->buflen + size >= lex->bufsize) {
+		lex->bufsize *= 2;
+		lex->buf = xrealloc(lex->buf, lex->bufsize);
 	}
 
-	lex->index += 1;
-	lex->col += 1;
+	memcpy(lex->buf + lex->buflen, buf, size);
+	lex->buflen += size;
+	lex->buf[lex->buflen] = '\0';
 }
 
-static int matchKeyword(Lexer *lex, char *start, usize lenght) {
-	char keyword[MAX_IDENTIFIER_LENGHT] = { 0 };
-	strncpy(keyword, start, lenght);
+static void clearBuffer(Lexer *lex) {
+	lex->buflen = 0;
+	lex->buf[0] = 0;
+}
 
-	/* Keywords are case insensitive, so we must set all characters to lowercase. */
-	for (usize i = 0; i < lenght; i += 1) {
-		keyword[i] = tolower(keyword[i]);
+static void pushStack(Lexer *lex, char c, bool buffer) {
+	assert(lex->stack[1] == CHAR_EOF);
+
+	lex->stack[1] = lex->stack[0];
+	lex->stack[0] = c;
+
+	if (buffer) {
+		lex->buflen -= 1;
+		lex->buf[lex->buflen] = '\0'; /* Consume character */
 	}
+}
 
-	for (usize i = 0; s_keywords[i].type != TOK_NONE; i += 1) {
-		if (strncmp(keyword, s_keywords[i].keyword, lenght) == 0) {
-			Token token = {
-				.type = s_keywords[i].type,
-				.start = start,
-				.lenght = lenght,
-			};
+static void updateLocation(Location *loc, char c) {
+	if (c == '\n') {
+		loc->lineno += 1;
+		loc->colno = 0;
+	} else if (c == '\t') {
+		loc->colno += 8;
+	} else {
+		loc->colno += 1;
+	}
+}
 
-			tokenlistInsert(&lex->tokens, token);
-			return 1;
+static char next(Lexer *lex, Location *loc, bool buffer) {
+	char c;
+
+	if (lex->stack[0] != CHAR_EOF) {
+		c = lex->stack[0];
+		lex->stack[0] = lex->stack[1];
+		lex->stack[1] = CHAR_EOF;
+	} else {
+		c = fgetc(lex->in);
+		updateLocation(&lex->location, c);
+
+		if (feof(lex->in)) {
+			c = CHAR_EOF;
 		}
 	}
 
-	return 0; /* Seems like it's not a valid keyword */
-}
-
-static int matchIdentifier(Lexer *lex) {
-	char *start = lex->stream->data + lex->index;
-	usize lenght = 0;
-	usize start_col = lex->col;
-	usize start_line = lex->line;
-
-	/* Get identifier lenght. */
-	while (isIdentifierChar(peek(lex))) {
-		next(lex);
-		lenght += 1;
-
-		if (lenght > MAX_IDENTIFIER_LENGHT) {
-			log_error("Identifier exceed 1024 characters lenght - %d: %d", start_line, start_col);
-			return 0;
+	if (loc != NULL) {
+		*loc = lex->location;
+		for (usize i = 0; i < 2 && lex->stack[i] != CHAR_EOF; i += 1) {
+			updateLocation(&lex->location, lex->stack[i]);
 		}
 	}
 
-	if (matchKeyword(lex, start, lenght)) {
-		return 1; /* The identifier is a keyword */
+	if (buffer) {
+		appendBuffer(lex, &c, 1);
 	}
 
-	char identifier[MAX_IDENTIFIER_LENGHT] = { 0 };
-	strncpy(identifier, start, lenght);
-	log_error("Unknown identifier \"%s\" - %d:%d", identifier, start_line, start_col);
-	return 0;
+	return c;
 }
 
-static int matchSymbol(Lexer *lex) {
-	char c = peek(lex);
+static char getCharacter(Lexer *lex, Location *loc) {
+	char c = next(lex, loc, false);
 
-	for (usize i = 0; s_single_symbols[i].symbol != '\0'; i += 1) {
-		if (c == s_single_symbols[i].symbol) {
-			Token token = {
-				.type = s_single_symbols[i].type,
-				.start = lex->stream->data + lex->index,
-				.lenght = 1,
-			};
+	while (c != CHAR_EOF && isSpace(c)) {
+		c = next(lex, loc, false);
+	}
 
-			tokenlistInsert(&lex->tokens, token);
-			return 1;
+	return c;
+}
+
+static void literal(Lexer *lex, Token *out) {
+	enum Bases {
+		BIN,
+		HEX,
+		DEC,
+	};
+
+	static const char numbers[][24] = {
+		[BIN] = "01",
+		[DEC] = "0123456789",
+		[HEX] = "0123456789abcdefABCDEF",
+	};
+
+	enum Bases state = DEC;
+	u8 base = 10;
+	char c = next(lex, &out->location, true);
+	assert(c != CHAR_EOF && isdigit(c));
+
+	if (c == '0') {
+		c = next(lex, NULL, true);
+		switch (c) {
+		case 'b':
+			state = BIN;
+			base = 2;
+			break;
+		case 'x':
+			state = HEX;
+			base = 16;
+			break;
 		}
 	}
 
-	log_error("Unknown symbol %c - %d:%d", peek(lex), lex->line, lex->col);
-	return 0;
-}
-
-void lexInit(Lexer *lex, StreamFile *stream) {
-	tokenlistCreate(&lex->tokens, 2);
-	if (lex->tokens.data == NULL) {
-		log_error("Unable to initialize tokens list");
-		return;
+	if (state != DEC) {
+		c = next(lex, NULL, true);
 	}
 
-	lex->stream = stream;
-	lex->index = 0;
-	lex->line = 1;
-	lex->col = 1;
+	while (strchr(numbers[state], c)) {
+		c = next(lex, NULL, true);
+	}
+
+	out->type = TOK_LITERAL;
+
+	errno = 0;
+	out->uval = strtoumax(lex->buf + (base == 10 ? 0 : 2), NULL, base);
+	if (errno == ERANGE) {
+		error(out->location, "Integer constant overflow");
+	}
+
+	clearBuffer(lex);
+}
+
+static int keywordCompare(const void *v1, const void *v2) {
+	return strcmp(*(const char **)v1, *(const char **)v2);
+}
+
+static TokenType keyword(Lexer *lex, Token *out) {
+	char c = next(lex, &out->location, true);
+	assert(c != CHAR_EOF && (isalpha(c) || c == '_'));
+
+	while (c != CHAR_EOF) {
+		if (!isalpha(c) && c != '_') {
+			pushStack(lex, c, true);
+			break;
+		}
+		c = next(lex, NULL, true);
+	}
+
+	void *token = bsearch(&lex->buf, tokens, TOK_LAST_KEYWORD + 1, sizeof(tokens[0]), keywordCompare);
+	if (token == NULL) {
+		error(out->location, "Unknown keyword %s", lex->buf);
+	}
+
+	out->type = (const char **)token - tokens;
+
+	clearBuffer(lex);
+	return out->type;
+}
+
+static TokenType comment(Lexer *lex, Token *out) {
+	char c = next(lex, NULL, false);
+
+	while (c != CHAR_EOF && c != '\n') {
+		c = next(lex, NULL, false);
+	}
+
+	return lexScan(lex, out);
+}
+
+void lexInit(Lexer *lex, FILE *in, usize fileid) {
+	memset(lex, 0, sizeof(*lex));
+
+	lex->in = in;
+	lex->bufsize = 128;
+	lex->buf = xcalloc(1, lex->bufsize);
+
+	lex->stack[0] = CHAR_EOF;
+	lex->stack[1] = CHAR_EOF;
+
+	lex->location.fileid = fileid;
+	lex->location.lineno = 1;
+	lex->location.colno = 1;
 }
 
 void lexQuit(Lexer *lex) {
-	tokenlistFree(&lex->tokens);
+	fclose(lex->in); /* NOLINT(cert-err33-c) */
+	free(lex->buf);
 }
 
-int lexScan(Lexer *lex) {
-	char c = peek(lex);
+TokenType lexScan(Lexer *lex, Token *out) {
+	char c = getCharacter(lex, &out->location);
 
-	while (c != '\0') {
-		switch (c) {
-		case '\n':
-			lex->line += 1;
-			lex->col = 0;
-			break;
-		case ' ':
-		case '\t':
-			break; /* Just ignore spaces or tabs */
-		case ';':
-			/* Consume comments */
-			while (c != '\n' && c != '\0') {
-				next(lex);
-				c = peek(lex);
-			}
-			break;
-		default:
-			if (isIdentifierInitChar(c)) {
-				matchIdentifier(lex);
-			} else if (ispunct(c)) {
-				matchSymbol(lex);
-			} else {
-				tokenlistFree(&lex->tokens);
-				return 0;
-			}
-
-			break;
-		}
-
-		next(lex);
-		c = peek(lex);
+	if (c == CHAR_EOF) {
+		out->type = TOK_EOF;
+		return out->type;
 	}
 
-	return 1;
+	if (isdigit(c)) {
+		pushStack(lex, c, false);
+		literal(lex, out);
+		return TOK_LITERAL;
+	}
+
+	if (isalpha(c) || c == '_') {
+		pushStack(lex, c, false);
+		return keyword(lex, out);
+	}
+
+	switch (c) {
+	case '(':
+		out->type = TOK_LPAREN;
+		break;
+	case ')':
+		out->type = TOK_RPAREN;
+		break;
+	case ',':
+		out->type = TOK_COMMA;
+		break;
+	case '$':
+		out->type = TOK_DOLLAR;
+		break;
+	case ':':
+		out->type = TOK_COLON;
+		break;
+	case '+':
+		out->type = TOK_PLUS;
+		break;
+	case '-':
+		out->type = TOK_MINUS;
+		break;
+	case ';':
+		return comment(lex, out);
+	default:
+		/* NOLINTBEGIN(cert-err33-c) */
+		fprintf(
+			stderr, "%zd - %zd:%zd: Syntax Error: Unexpected character\n", lex->location.fileid, lex->location.lineno,
+			lex->location.colno
+		);
+
+		/* NOLINTEND(cert-err33-c) */
+		exit(EXIT_FAILURE);
+	}
+
+	return out->type;
 }

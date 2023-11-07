@@ -3,59 +3,59 @@
 
 #include "types.h"
 
-/* clang-format off */
 typedef enum TokenType {
-	TOK_NONE, /* Just for error verifying */
+	/* Keywords */
+	TOK_ADD,
+	TOK_ADC,
+	TOK_DIV,
+	TOK_INC,
+	TOK_MOV,
+	TOK_SUB,
+	TOK_MUL,
+	TOK_SBC,
+	TOK_DEC,
+
+	/* Registers */
+	TOK_RA,
+	TOK_RB,
+	TOK_RC,
+	TOK_RX,
+	TOK_RY,
+	TOK_RZ,
+	TOK_LAST_KEYWORD = TOK_RZ,
 
 	/* Symbols */
-	TOK_LEFT_PAREN, TOK_RIGHT_PAREN,
-	TOK_COMMA, TOK_DOLLAR, TOK_COLON,
-	TOK_PLUS, TOK_MINUS,
+	TOK_LPAREN,
+	TOK_RPAREN,
+	TOK_COMMA,
+	TOK_DOLLAR,
+	TOK_COLON,
+	TOK_PLUS,
+	TOK_MINUS,
+	TOK_LAST_SYMBOL = TOK_MINUS,
 
-	/* Keywords */
-	TOK_MOV, TOK_ADD, TOK_SUB, TOK_ADC, TOK_SBC,
-	TOK_MUL, TOK_DIV, TOK_INC, TOK_DEC,
-	TOK_RA, TOK_RB, TOK_RC,
-	TOK_RX, TOK_RY, TOK_RZ,
+	/* Data */
+	TOK_LITERAL,
 
-	/* Literals */
-	TOK_CONSTANT,
-
-	/* End-of-file */
+	/* Magic */
 	TOK_EOF,
+	TOK_NONE,
 } TokenType;
 
-/* clang-format on */
+typedef struct Location {
+	usize fileid;
+	usize lineno;
+	usize colno;
+} Location;
 
 typedef struct Token {
 	TokenType type;
-	char *start;
-	usize lenght;
+	Location location;
+
+	union {
+		u32 uval;
+		s32 sval;
+	};
 } Token;
-
-typedef struct TokenList {
-	Token *data;
-
-	/* Internal Private Data */
-	usize used;
-	usize size;
-} TokenList;
-
-/*!
- * Initialize TokenList struct memory.
- *
- * @param list Reference to the TokenList struct.
- * @param size Initial size to the list.
- */
-void tokenlistCreate(TokenList *list, usize size);
-void tokenlistFree(TokenList *list);
-
-/*!
- * Insert Token element into the list.
- *
- * @param list    Reference to the TokenList struct.
- * @param element Token to insert.
- */
-void tokenlistInsert(TokenList *list, Token element);
 
 #endif /* _ASM_TOKEN_H_ */

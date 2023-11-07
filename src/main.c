@@ -1,9 +1,7 @@
 #include "asm/lex.h"
-#include "common.h"
 #include "log/log.h"
 
 #include <stdlib.h>
-#include <string.h>
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
@@ -11,31 +9,27 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	StreamFile stream;
-	if (!fileLoad(&stream, argv[1])) {
+	FILE *file = fopen(argv[1], "r");
+	if (file == NULL) {
 		log_fatal("Unable to load test assembly.");
 		return EXIT_FAILURE;
 	}
 
 	Lexer lexer;
-	lexInit(&lexer, &stream);
+	lexInit(&lexer, file, 0);
 
-	if (!lexScan(&lexer)) {
-		log_fatal("Cannot do lexing");
-		fileClose(&stream);
-		lexQuit(&lexer);
-		return EXIT_FAILURE;
-	}
+	TokenType type = TOK_NONE;
+	while (type != TOK_EOF) {
+		Token token;
 
-	for (size_t i = 0; i < lexer.tokens.used; i += 1) {
-		Token token = lexer.tokens.data[i];
+		type = lexScan(&lexer, &token);
 
-		char *keyword = strndup(token.start, token.lenght);
-		log_info("%s", keyword);
-		free(keyword);
+		log_debug(
+			"%s - %zd:%zd: %d -> %#x", argv[1], token.location.lineno, token.location.colno, token.type, token.uval
+		);
+		token.uval = 0;
 	}
 
 	lexQuit(&lexer);
-	fileClose(&stream);
 	return EXIT_SUCCESS;
 }

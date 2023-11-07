@@ -22,30 +22,22 @@ usize bitSet(usize data, u8 pos, bool enable) {
 	return bitSetN(data, pos, 0x01, enable);
 }
 
-int fileLoad(StreamFile *file, const char *path) {
-	FILE *input = fopen(path, "r");
-	if (input == NULL) {
-		log_error("Unable to open file %s", path);
-
-		file->data = NULL;
-		return 0;
+void *xcalloc(size_t count, size_t size) {
+	void *ptr = calloc(count, size);
+	if (ptr == NULL && size != 0) {
+		log_fatal("Unable to allocate memory!");
+		exit(EXIT_FAILURE);
 	}
 
-	/* NOLINTBEGIN(cert-err33-c) */
-	fseek(input, 0, SEEK_END);
-	file->lenght = ftell(input);
-	fseek(input, 0, SEEK_SET);
-
-	file->data = calloc(file->lenght + 1, sizeof(char));
-	fread(file->data, sizeof(char), file->lenght, input);
-	fclose(input);
-	/* NOLINTEND(cert-err33-c) */
-
-	file->data[file->lenght] = '\0';
-	return 1;
+	return ptr;
 }
 
-void fileClose(StreamFile *file) {
-	free(file->data);
-	file->data = NULL;
+void *xrealloc(void *ptr, size_t size) {
+	ptr = realloc(ptr, size);
+	if (ptr == NULL && size != 0) {
+		log_fatal("Unable to reallocate memory!");
+		exit(EXIT_FAILURE);
+	}
+
+	return ptr;
 }

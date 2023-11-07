@@ -2,38 +2,21 @@
 #define _ASM_LEX_H_
 
 #include "asm/token.h"
-#include "common.h"
+
+#define CHAR_EOF '\0'
 
 typedef struct Lexer {
-	StreamFile *stream;
-	usize index; /* Current stream index */
+	FILE *in;
+	char *buf;
+	usize bufsize;
+	usize buflen;
+	char stack[2];
 
-	TokenList tokens;
-
-	usize line;
-	usize col;
+	Location location;
 } Lexer;
 
-/*!
- * Initialize Lexer struct memory.
- *
- * @param lex    Reference to Lexer struct to initialize.
- * @param stream File stream with the assembly program.
- */
-void lexInit(Lexer *lex, StreamFile *stream);
+void lexInit(Lexer *lex, FILE *in, usize fileid);
 void lexQuit(Lexer *lex);
-
-/*!
- * Scans through the stream file searching for tokens.
- *
- * When a token is found, the lexer will store it at tokens member of the Lexer
- * struct. If a invalid token is found, the Scanner will show a error message
- * and return 0.
- *
- * @param lex Reference to Lexer struct.
- *
- * @return 0 on error, 1 otherwise.
- */
-int lexScan(Lexer *lex);
+TokenType lexScan(Lexer *lex, Token *out);
 
 #endif /* _ASM_LEX_H_ */

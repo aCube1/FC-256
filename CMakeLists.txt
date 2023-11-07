@@ -17,7 +17,6 @@ target_sources(
 	${PROJECT_NAME}
 	PRIVATE
 		src/asm/lex.c
-		src/asm/token.c
 		src/emu/opcode.c
 		src/emu/operand.c
 		src/emu/cpu.c
