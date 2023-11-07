@@ -17,16 +17,16 @@ Encoding: RRRRRRAA-AAIIIIII
 10-15 |   R    | Register Selection | 6
 
 ======== Instructions ========
-Code | Mnemonic | Operation      | Cycles^ | Flags
-0x00 |   MOV    | A = B          |    1    | NZ
-0x01 |   ADD    | A += B         |    2    | OCNZ
-0x02 |   SUB    | A -= B         |    2    | OCNZ
-0x03 |   ADC    | A += B + C     |    2    | OCNZ
-0x04 |   SBC    | A -= B - 1 + C |    2    | OCNZ
-0x05 |   MUL    | A *= B         |    2    | OCNZ
-0x06 |   DIV    | A /= B         |    2    | OCNZ
-0x07 |   INC    | A += 1         |    1    | NZ
-0x08 |   DEC    | A -= 1         |    1    | NZ
+Code | Mnemonic | Operation   | Cycles^ | Flags
+0x00 |   MOV    | A = B       |    1    | NZ
+0x01 |   ADD    | A += B      |    2    | OCNZ
+0x02 |   SUB    | A -= B      |    2    | OCNZ
+0x03 |   ADC    | A += B + C  |    2    | OCNZ
+0x04 |   SBC    | A += ~B + C |    2    | OCNZ
+0x05 |   INC    | A += 1      |    1    | NZ
+0x06 |   DEC    | A -= 1      |    1    | NZ
+0x07 |   MUL    | A *= B      |    2    | OCNZ
+0x08 |   DIV    | A /= B      |    2    | OCNZ
 
 * Note: See opcodes.txt for the Instructions codes with each address mode.
 
@@ -39,8 +39,11 @@ possible the selection of 64 combinations.
  Bit  | Register | Usage            \   Bit  | Register | Usage
 0b000 |    rA    | General Purpose  /  0b100 |    rX    | General Purpose
 0b001 |    rB    | General Purpose  \  0b101 |    rY    | General Purpose
-0b010 |    rC    | General Purpose  /  0b110 |    rZ    | General Purpose
+0b010 |    rC    | General Purpose  /  0b110 |    rZ    | General Purpose*
 0b011 |    PC    | Program Counter  \  0b111 |    SP    | Stack Pointer
+
+* Note: rZ register will be used by the MUL instructions to store the high
+16-bis of the result.
 
 * Example: "MOV rX, rZ"
 	The selector will be read as 110100.
@@ -71,15 +74,15 @@ negative result: 32767 + 1 = -32768).
 requests(IRQ).
 
 ======== Address Modes ========
-Hex  | Name      | Operand        | Cycles^ \  Hex  | Name     | Operand            | Cycles^
-0x00 | Implied   | No Operand     |   0     /  0x08 | Absolute | rX, ($Addr)        |   2
-0x01 | Relative  | -|+Offset      |   1     \  0x09 | Banked   | ($Bank, rX)        |   2
-0x02 | Immediate | rX, Const      |   2     /  0x0a | Banked   | ($Bank, rX), Const |   3
-0x03 | Register  | rX             |   1     \  0x0b | Banked   | ($Bank, rX), rY    |   3
-0x04 | Register  | rX, rY         |   2     /  0x0c | Banked   | rX, ($Bank, rY)    |   3
-0x05 | Absolute  | ($Addr)        |   1     \  0x0d | Indexed  | ($Addr, rX)        |   3
-0x06 | Absolute  | ($Addr), Const |   2     /  0x0e | Indexed  | ($Addr, rX), rY    |   4
-0x07 | Absolute  | ($Addr), rX    |   2     \  0x0f | Indexed  | rX, ($Addr, rY)    |   4
+Hex  | Name      | Operand        | Cycles^ \  Hex  | Name     | Operand           | Cycles^
+0x00 | Implied   | No Operand     |   0     /  0x08 | Absolute | r1, ($Addr)       |   2
+0x01 | Relative  | Offset         |   1     \  0x09 | Banked   | ($Bank:r1)        |   2
+0x02 | Immediate | r1, Const      |   2     /  0x0a | Banked   | ($Bank:r1), Const |   3
+0x03 | Register  | r1             |   1     \  0x0b | Banked   | ($Bank:r1), r2    |   3
+0x04 | Register  | r1, r2         |   2     /  0x0c | Banked   | r1, ($Bank:r2)    |   3
+0x05 | Absolute  | ($Addr)        |   1     \  0x0d | Indexed  | ($Addr:r1)        |   3
+0x06 | Absolute  | ($Addr), Const |   2     /  0x0e | Indexed  | ($Addr:r1), r2    |   4
+0x07 | Absolute  | ($Addr), r1    |   2     \  0x0f | Indexed  | r1, ($Addr:r2)    |   4
 
 * Bank   - u8
 * Const  - u16
