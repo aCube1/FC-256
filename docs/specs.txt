@@ -19,14 +19,12 @@ Encoding: RRRRRRAA-AAIIIIII
 ======== Instructions ========
 Code | Mnemonic | Operation   | Cycles^ | Flags
 0x00 |   MOV    | A = B       |    1    | NZ
-0x01 |   ADD    | A += B      |    2    | OCNZ
-0x02 |   SUB    | A -= B      |    2    | OCNZ
-0x03 |   ADC    | A += B + C  |    2    | OCNZ
-0x04 |   SBC    | A += ~B + C |    2    | OCNZ
-0x05 |   INC    | A += 1      |    1    | NZ
-0x06 |   DEC    | A -= 1      |    1    | NZ
-0x07 |   MUL    | A *= B      |    2    | OCNZ
-0x08 |   DIV    | A /= B      |    2    | OCNZ
+0x01 |   ADD    | A += B + C  |    2    | OCNZ
+0x02 |   SUB    | A += ~B + C |    2    | OCNZ
+0x03 |   INC    | A += 1      |    1    | NZ
+0x04 |   DEC    | A -= 1      |    1    | NZ
+0x05 |   MUL    | A *= B      |    2    | OCNZ
+0x06 |   DIV    | A /= B      |    2    | OCNZ
 
 * Note: See opcodes.txt for the Instructions codes with each address mode.
 

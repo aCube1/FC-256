@@ -19,10 +19,7 @@ int main(void) {
 	cpuReset(&cpu);
 
 	/* TODO: Remove later. */
-	char status_msg[9] = { 0 };
-	status_msg[0] = '*';
-	status_msg[1] = '*';
-	status_msg[2] = '*';
+	char status_msg[9] = "***-----";
 
 	while (cpu.actual_pc <= 0xff8008 || cpu.cycles != 0) {
 		cpuClock(&cpu);

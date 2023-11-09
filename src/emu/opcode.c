@@ -1,5 +1,6 @@
 #include "emu/opcode.h"
 
+#include "emu/cpu.h"
 #include "emu/operand.h"
 
 #include <assert.h>
@@ -267,18 +268,14 @@ u8 opcodeMOV(CPU *cpu) {
 	}
 
 	setNegativeZero(cpu, data);
-
 	return 1;
 }
 
 u8 opcodeADD(CPU *cpu) {
 	u16 data = operandUnwrap(cpu, &cpu->dest);
 	u16 add = operandUnwrap(cpu, &cpu->src);
-	u32 result = data + add;
 
-	setNegativeZero(cpu, result);
-	setCarry(cpu, result);
-	setOverflow(cpu, data, add, result);
+	u32 result = data + add + bitGet(cpu->status, STATUS_CARRY);
 
 	switch (cpu->dest.type) {
 	case OT_REGISTER:
@@ -291,6 +288,9 @@ u8 opcodeADD(CPU *cpu) {
 		break;
 	}
 
+	setNegativeZero(cpu, result);
+	setCarry(cpu, result);
+	setOverflow(cpu, data, add, result);
 	return 2;
 }
 
@@ -302,15 +302,15 @@ u8 opcodeSUB(CPU *cpu) {
 
 	switch (cpu->src.type) {
 	case OT_REGISTER:
-		cpu->src.reg = (~cpu->src.reg) + 1;
+		cpu->src.reg = ~cpu->src.reg;
 		break;
 	case OT_CONSTANT:
-		cpu->src.constant = (~cpu->src.constant) + 1;
+		cpu->src.constant = ~cpu->src.constant;
 		break;
 	case OT_ADDRESS:
 		/* HACK: Just trick the opcodeADD. */
 		cpu->src.type = OT_CONSTANT;
-		cpu->src.constant = (~cpuMemRead16(cpu, cpu->src.addr)) + 1;
+		cpu->src.constant = ~cpuMemRead16(cpu, cpu->src.addr);
 		break;
 	default:
 		return 2; /* Do absolutely nothing... */

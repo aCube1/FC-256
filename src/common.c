@@ -13,11 +13,11 @@ usize bitSetN(usize data, u8 pos, usize mask, bool enable) {
 }
 
 usize bitGet(usize data, u8 pos) {
-	return bitGetN(data, pos, 0x01);
+	return bitGetN(data, pos, 1);
 }
 
 usize bitSet(usize data, u8 pos, bool enable) {
-	return bitSetN(data, pos, 0x01, enable);
+	return bitSetN(data, pos, 1, enable);
 }
 
 void *xcalloc(size_t count, size_t size) {
