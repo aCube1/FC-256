@@ -54,8 +54,8 @@ u8 addrIDX(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg);
 u8 opcodeMOV(CPU *cpu);
 u8 opcodeADD(CPU *cpu);
 u8 opcodeSUB(CPU *cpu);
-// u8 opcodeINC(CPU *cpu);
-// u8 opcodeDEC(CPU *cpu);
+u8 opcodeINC(CPU *cpu);
+u8 opcodeDEC(CPU *cpu);
 // u8 opcodeMUL(CPU *cpu);
 // u8 opcodeDIV(CPU *cpu);
 

@@ -26,9 +26,7 @@ AddrHandler opcode_addresses[ADDR_COUNT] = {
 };
 
 OpcodeHandler opcode_handlers[OPCODE_COUNT] = {
-	opcodeMOV,
-	opcodeADD,
-	opcodeSUB,
+	opcodeMOV, opcodeADD, opcodeSUB, opcodeINC, opcodeDEC,
 };
 
 u8 addrREL(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
@@ -317,4 +315,40 @@ u8 opcodeSUB(CPU *cpu) {
 	}
 
 	return opcodeADD(cpu);
+}
+
+u8 opcodeINC(CPU *cpu) {
+	u16 data = operandUnwrap(cpu, &cpu->dest) + 1;
+
+	switch (cpu->dest.type) {
+	case OT_REGISTER:
+		cpu->regs[cpu->dest.reg] = data;
+		break;
+	case OT_ADDRESS:
+		cpuMemWrite16(cpu, cpu->dest.addr, data);
+		break;
+	default:
+		break;
+	}
+
+	setNegativeZero(cpu, data);
+	return 1;
+}
+
+u8 opcodeDEC(CPU *cpu) {
+	u16 data = operandUnwrap(cpu, &cpu->dest) - 1;
+
+	switch (cpu->dest.type) {
+	case OT_REGISTER:
+		cpu->regs[cpu->dest.reg] = data;
+		break;
+	case OT_ADDRESS:
+		cpuMemWrite16(cpu, cpu->dest.addr, data);
+		break;
+	default:
+		break;
+	}
+
+	setNegativeZero(cpu, data);
+	return 1;
 }
