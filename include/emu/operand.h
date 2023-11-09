@@ -18,8 +18,8 @@ typedef struct {
 	union {
 		u8 reg;
 		u16 constant;
-		u32 addr;
 		s16 offset;
+		u32 addr;
 	};
 } Operand;
 
@@ -31,6 +31,6 @@ typedef struct {
  *
  * @return Unwrapped data.
  */
-u16 operandUnwrap(CPU *cpu, Operand *op);
+u16 operandUnwrap(CPU *cpu, const Operand *op);
 
 #endif /* _EMU_OPERAND_H_ */

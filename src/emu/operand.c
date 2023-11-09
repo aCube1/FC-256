@@ -2,7 +2,7 @@
 
 #include "emu/cpu.h"
 
-u16 operandUnwrap(CPU *cpu, Operand *op) {
+u16 operandUnwrap(CPU *cpu, const Operand *op) {
 	switch (op->type) {
 	case OT_REGISTER:
 		return cpu->regs[op->reg];

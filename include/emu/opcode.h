@@ -31,13 +31,13 @@ enum AddressingMode {
 	ADDR_ABS_2, /* 0x06 - Absolute  : (Addr), Const */
 	ADDR_ABS_3, /* 0x07 - Absolute  : (Addr), rX */
 	ADDR_ABS_4, /* 0x08 - Absolute  : rX, (Addr) */
-	ADDR_BNK_1, /* 0x09 - Banked    : (Bank, rX) */
-	ADDR_BNK_2, /* 0x0a - Banked    : (Bank, rX), Const */
-	ADDR_BNK_3, /* 0x0b - Banked    : (Bank, rX), rY */
-	ADDR_BNK_4, /* 0x0c - Banked    : rX, (Bank, rY) */
-	ADDR_IDX_1, /* 0x0d - Indexed   : (Addr, rX) */
-	ADDR_IDX_2, /* 0x0e - Indexed   : (Addr, rX), rY */
-	ADDR_IDX_3, /* 0x0f - Indexed   : rX, (Addr, rY) */
+	ADDR_BNK_1, /* 0x09 - Banked    : (Bank:rX) */
+	ADDR_BNK_2, /* 0x0a - Banked    : (Bank:rX), Const */
+	ADDR_BNK_3, /* 0x0b - Banked    : (Bank:rX), rY */
+	ADDR_BNK_4, /* 0x0c - Banked    : rX, (Bank:rY) */
+	ADDR_IDX_1, /* 0x0d - Indexed   : (Addr:rX) */
+	ADDR_IDX_2, /* 0x0e - Indexed   : (Addr:rX), rY */
+	ADDR_IDX_3, /* 0x0f - Indexed   : rX, (Addr:rY) */
 	ADDR_COUNT
 };
 
@@ -53,12 +53,12 @@ u8 addrIDX(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg);
 
 u8 opcodeMOV(CPU *cpu);
 u8 opcodeADD(CPU *cpu);
-// u8 opcodeSUB(CPU *cpu);
+u8 opcodeSUB(CPU *cpu);
 // u8 opcodeADC(CPU *cpu);
 // u8 opcodeSBC(CPU *cpu);
-// u8 opcodeMUL(CPU *cpu);
-// u8 opcodeDIV(CPU *cpu);
 // u8 opcodeINC(CPU *cpu);
 // u8 opcodeDEC(CPU *cpu);
+// u8 opcodeMUL(CPU *cpu);
+// u8 opcodeDIV(CPU *cpu);
 
 #endif /* _EMU_OPCODES_H_ */

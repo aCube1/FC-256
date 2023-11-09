@@ -2,6 +2,8 @@
 
 #include "emu/operand.h"
 
+#include <assert.h>
+
 static inline void setNegativeZero(CPU *cpu, u16 data) {
 	cpu->status = bitSet(cpu->status, STATUS_ZERO, data == 0x00);
 	cpu->status = bitSet(cpu->status, STATUS_NEGATIVE, bitGet(data, 15));
@@ -25,6 +27,7 @@ AddrHandler opcode_addresses[ADDR_COUNT] = {
 OpcodeHandler opcode_handlers[OPCODE_COUNT] = {
 	opcodeMOV,
 	opcodeADD,
+	opcodeSUB,
 };
 
 u8 addrREL(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
@@ -289,4 +292,29 @@ u8 opcodeADD(CPU *cpu) {
 	}
 
 	return 2;
+}
+
+u8 opcodeSUB(CPU *cpu) {
+	switch (cpu->op2.type) {
+	case OT_REGISTER:
+		cpu->op2.reg = (~cpu->op2.reg) + 1;
+		break;
+	case OT_CONSTANT:
+		cpu->op2.constant = (~cpu->op2.constant) + 1;
+		break;
+	default:
+		break;
+	}
+
+	if (cpu->op2.type) {
+		u16 value = cpuMemRead16(cpu, cpu->op2.addr);
+		cpuMemWrite16(cpu, cpu->op2.addr, (~value) + 1);
+
+		u8 cycles = opcodeADD(cpu);
+
+		cpuMemWrite16(cpu, cpu->op2.addr, value);
+		return cycles;
+	}
+
+	return opcodeADD(cpu);
 }

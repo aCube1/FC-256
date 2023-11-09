@@ -8,7 +8,7 @@
 
 void cpuPowerUp(CPU *cpu) {
 	if (cpu->memory == NULL) {
-		cpu->memory = calloc(RAM_SIZE, sizeof(u8));
+		cpu->memory = xcalloc(RAM_SIZE, sizeof(u8));
 	}
 
 	/* Reset general registers */
@@ -26,7 +26,6 @@ void cpuReset(CPU *cpu) {
 	cpu->regs[REG_PC] = cpu->actual_pc & 0xffff;
 
 	cpu->status = 0xe0; /* NOTE: Always set the unused bits. */
-	// cpu->data_bank = 0x00;
 
 	cpu->cycles = 8;
 }

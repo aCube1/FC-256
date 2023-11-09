@@ -1,15 +1,15 @@
 #include "common.h"
 
-usize bitGetN(usize data, u8 pos, usize n) {
-	return (data >> pos) & n;
+usize bitGetN(usize data, u8 pos, usize mask) {
+	return (data >> pos) & mask;
 }
 
-usize bitSetN(usize data, u8 pos, usize n, bool enable) {
+usize bitSetN(usize data, u8 pos, usize mask, bool enable) {
 	if (!enable) {
-		return data & ~(n << pos);
+		return data & ~(mask << pos);
 	}
 
-	return data | (n << pos);
+	return data | (mask << pos);
 }
 
 usize bitGet(usize data, u8 pos) {
@@ -18,4 +18,24 @@ usize bitGet(usize data, u8 pos) {
 
 usize bitSet(usize data, u8 pos, bool enable) {
 	return bitSetN(data, pos, 0x01, enable);
+}
+
+void *xcalloc(size_t count, size_t size) {
+	void *ptr = calloc(count, size);
+	if (ptr == NULL && size != 0) {
+		log_fatal("Unable to allocate memory!");
+		exit(EXIT_FAILURE);
+	}
+
+	return ptr;
+}
+
+void *xrealloc(void *ptr, size_t size) {
+	ptr = realloc(ptr, size);
+	if (ptr == NULL && size != 0) {
+		log_fatal("Unable to reallocate memory!");
+		exit(EXIT_FAILURE);
+	}
+
+	return ptr;
 }

@@ -8,12 +8,12 @@ int main(void) {
 
 	cpuMemWrite24(&cpu, VEC_RESET, 0xff8000);
 
-	cpuMemWrite16(&cpu, 0xff8000, 0x1080); /* MOV rX, 0x8042 */
-	cpuMemWrite16(&cpu, 0xff8002, 0x7fff);
+	cpuMemWrite16(&cpu, 0xff8000, 0x1080); /* MOV rX, 0x8000 */
+	cpuMemWrite16(&cpu, 0xff8002, 0x8000);
 
 	cpuMemWrite16(&cpu, 0xff8004, 0x8900); /* MOV rC, rX */
 
-	cpuMemWrite16(&cpu, 0xff8006, 0x1081); /* ADD rX, 0x8042 */
+	cpuMemWrite16(&cpu, 0xff8006, 0x1082); /* SUB rX, 0x0001 */
 	cpuMemWrite16(&cpu, 0xff8008, 0x0001);
 
 	cpuReset(&cpu);
