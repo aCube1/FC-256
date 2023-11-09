@@ -381,25 +381,24 @@ u8 opcodeDIV(CPU *cpu) {
 	u16 data = operandUnwrap(cpu, &cpu->dest);
 	u16 div = operandUnwrap(cpu, &cpu->src);
 
-	u32 quocient = data / div;
-	u32 remainder = data % div;
+	u32 result = div != 0 ? data / div : 0xffff;
 
-	cpu->regs[REG_Z] = remainder; /* Store remainder on rZ. */
+	/* Store remainder on rZ. */
+	cpu->regs[REG_Z] = div != 0 ? data % div : data;
 
-	/* Store low 16 bits */
 	switch (cpu->dest.type) {
 	case OT_REGISTER:
-		cpu->regs[cpu->dest.reg] = quocient;
+		cpu->regs[cpu->dest.reg] = result;
 		break;
 	case OT_OFFSET:
-		cpuMemWrite16(cpu, cpu->dest.addr, quocient);
+		cpuMemWrite16(cpu, cpu->dest.addr, result);
 		break;
 	default:
 		break;
 	}
 
-	setNegativeZero(cpu, quocient);
-	setCarry(cpu, quocient);
-	setOverflow(cpu, data, div, quocient);
+	setNegativeZero(cpu, result);
+	setCarry(cpu, result);
+	setOverflow(cpu, data, div, result);
 	return 3;
 }

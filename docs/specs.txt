@@ -24,9 +24,11 @@ Code | Mnemonic | Operation   | Cycles^ | Flags
 0x03 |   INC    | A += 1      |    1    | NZ
 0x04 |   DEC    | A -= 1      |    1    | NZ
 0x05 |   MUL    | A *= B      |    3    | OCNZ
-0x06 |   DIV    | A /= B      |    3    | OCNZ
+0x06 |   DIV**  | A /= B      |    3    | OCNZ
 
 * Note: See opcodes.txt for the Instructions codes with each address mode.
+** Division by zero always produce the result of 0xffff, and a remainder that
+is equal to the dividend.
 
 ======== Registers ========
 Description: Registers can be accessed as operands. There are 8 possible 16-bit
@@ -101,8 +103,7 @@ Hex  | Name      | Operand        | Cycles^ \  Hex  | Name     | Operand        
 0x400000 | Reset    | PowerUp/Reset          |   8
 0x400003 | IRQ      | Interrupt Request      |   7
 0x400006 | NMI      | Non-Maskable Interrupt |   7
-0x400009 | Div.Zero | Division by Zero error |   7
 
 ===============================================================
-^ All cycles are arbitrary for now, there's no way that a real hardware to have
+^ All cycles are arbitrary for now, there's no way real hardware could have
 this defined amount of cycles for each instruction.
