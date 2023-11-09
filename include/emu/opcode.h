@@ -56,7 +56,7 @@ u8 opcodeADD(CPU *cpu);
 u8 opcodeSUB(CPU *cpu);
 u8 opcodeINC(CPU *cpu);
 u8 opcodeDEC(CPU *cpu);
-// u8 opcodeMUL(CPU *cpu);
-// u8 opcodeDIV(CPU *cpu);
+u8 opcodeMUL(CPU *cpu);
+u8 opcodeDIV(CPU *cpu);
 
 #endif /* _EMU_OPCODES_H_ */

@@ -8,20 +8,21 @@ int main(void) {
 
 	cpuMemWrite24(&cpu, VEC_RESET, 0xff8000);
 
-	cpuMemWrite16(&cpu, 0xff8000, 0x1080); /* MOV rX, 0x8000 */
-	cpuMemWrite16(&cpu, 0xff8002, 0x8000);
+	cpuMemWrite16(&cpu, 0xff8000, 0x1080); /* MOV rX, 0xc000 */
+	cpuMemWrite16(&cpu, 0xff8002, 0x0003);
 
-	cpuMemWrite16(&cpu, 0xff8004, 0x8900); /* MOV rC, rX */
+	cpuMemWrite16(&cpu, 0xff8004, 0x1086); /* DIV rX, 0x0002 */
+	cpuMemWrite16(&cpu, 0xff8006, 0x0002);
 
-	cpuMemWrite16(&cpu, 0xff8006, 0x10c4); /* DEC rX */
-	cpuMemWrite16(&cpu, 0xff8008, 0x10c3); /* INC rX */
+	cpuMemWrite16(&cpu, 0xff8008, 0x1085); /* MUL rX, 0x0002 */
+	cpuMemWrite16(&cpu, 0xff800a, 0x0002);
 
 	cpuReset(&cpu);
 
 	/* TODO: Remove later. */
 	char status_msg[9] = "***-----";
 
-	while (cpu.actual_pc <= 0xff8008 || cpu.cycles != 0) {
+	while (cpu.actual_pc <= 0xff800a || cpu.cycles != 0) {
 		cpuClock(&cpu);
 
 		if (cpu.cycles == 0) {
@@ -32,7 +33,10 @@ int main(void) {
 			status_msg[6] = bitGet(cpu.status, STATUS_NEGATIVE) ? 'N' : '-';
 			status_msg[7] = bitGet(cpu.status, STATUS_ZERO) ? 'Z' : '-';
 
-			log_debug("PC: %#x -> rC: %#x | rX: %#x ", cpu.actual_pc, cpu.regs[REG_C], cpu.regs[REG_X]);
+			log_debug(
+				"PC: %#x -> rC: %#x | rX: %#x | rZ: %#x ", cpu.actual_pc, cpu.regs[REG_C], cpu.regs[REG_X],
+				cpu.regs[REG_Z]
+			);
 			log_debug("^ Status: %#x -> %s", cpu.status, status_msg);
 		}
 	}

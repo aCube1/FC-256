@@ -15,9 +15,7 @@ static inline void setCarry(CPU *cpu, u32 data) {
 }
 
 static inline void setOverflow(CPU *cpu, u16 data1, u16 data2, u32 result) {
-	bool is_overflow = (data1 ^ result) & (data2 ^ result) & 0x8000 != 0x00;
-
-	cpu->status = bitSet(cpu->status, STATUS_OVERFLOW, is_overflow);
+	cpu->status = bitSet(cpu->status, STATUS_OVERFLOW, (data1 ^ result) & (data2 ^ result) & 0x8000 != 0x00);
 }
 
 AddrHandler opcode_addresses[ADDR_COUNT] = {
@@ -26,7 +24,7 @@ AddrHandler opcode_addresses[ADDR_COUNT] = {
 };
 
 OpcodeHandler opcode_handlers[OPCODE_COUNT] = {
-	opcodeMOV, opcodeADD, opcodeSUB, opcodeINC, opcodeDEC,
+	opcodeMOV, opcodeADD, opcodeSUB, opcodeINC, opcodeDEC, opcodeMUL, opcodeDIV,
 };
 
 u8 addrREL(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
@@ -351,4 +349,57 @@ u8 opcodeDEC(CPU *cpu) {
 
 	setNegativeZero(cpu, data);
 	return 1;
+}
+
+u8 opcodeMUL(CPU *cpu) {
+	u16 data = operandUnwrap(cpu, &cpu->dest);
+	u16 mul = operandUnwrap(cpu, &cpu->src);
+
+	u32 result = data * mul;
+
+	/* Store low 16 bits */
+	switch (cpu->dest.type) {
+	case OT_REGISTER:
+		cpu->regs[cpu->dest.reg] = result & 0xffff;
+		break;
+	case OT_OFFSET:
+		cpuMemWrite16(cpu, cpu->dest.addr, result & 0xffff);
+		break;
+	default:
+		break;
+	}
+
+	cpu->regs[REG_Z] = result >> 16; /* Store high 16 bits on rZ. */
+
+	setNegativeZero(cpu, result);
+	setCarry(cpu, result);
+	setOverflow(cpu, data, mul, result);
+	return 3;
+}
+
+u8 opcodeDIV(CPU *cpu) {
+	u16 data = operandUnwrap(cpu, &cpu->dest);
+	u16 div = operandUnwrap(cpu, &cpu->src);
+
+	u32 quocient = data / div;
+	u32 remainder = data % div;
+
+	cpu->regs[REG_Z] = remainder; /* Store remainder on rZ. */
+
+	/* Store low 16 bits */
+	switch (cpu->dest.type) {
+	case OT_REGISTER:
+		cpu->regs[cpu->dest.reg] = quocient;
+		break;
+	case OT_OFFSET:
+		cpuMemWrite16(cpu, cpu->dest.addr, quocient);
+		break;
+	default:
+		break;
+	}
+
+	setNegativeZero(cpu, quocient);
+	setCarry(cpu, quocient);
+	setOverflow(cpu, data, div, quocient);
+	return 3;
 }
