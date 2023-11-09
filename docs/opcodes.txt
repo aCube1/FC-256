@@ -50,25 +50,25 @@ Code  | Mnemonic | Address Mode | Execution           | Cycles^
 0x344 |   DEC    |   Indexed    | mem[Addr + r1] -= 1 |   4
 
 Code  | Mnemonic | Address Mode | Execution                                          | Cycles^
-0x085 |   MUL    |   Immediate  | r1 * Const; r1: Low, rZ: High                      |   4
-0x105 |   MUL    |   Register   | r1 * r2; r1: Low, rZ: High                         |   4
-0x185 |   MUL    |   Absolute   | mem[Addr] * Const; mem[Addr]: Low, rZ: High        |   4
-0x1c5 |   MUL    |   Absolute   | mem[Addr] * r1; mem[Addr]: Low, rZ: High           |   4
-0x205 |   MUL    |   Absolute   | r1 * mem[Addr]; r1: Low, rZ: High                  |   4
-0x285 |   MUL    |   Banked     | mem[BK + r1] * Const; mem[BK + r1]: Low, rZ: High  |   5
-0x2c5 |   MUL    |   Banked     | mem[BK + r1] * r2; mem[BK + r1]: Low, rZ: High     |   5
-0x305 |   MUL    |   Banked     | r1 * mem[BK + r2]; r1: Low, rZ: High               |   5
-0x385 |   MUL    |   Indexed    | mem[Addr + r1] * r2; mem[Addr + r1]: Low, rZ: High |   6
-0x3c5 |   MUL    |   Indexed    | r1 * mem[Addr + r2]; r1: Low, rZ: High             |   6
+0x085 |   MUL    |   Immediate  | r1 * Const; r1: Low, rZ: High                      |   5
+0x105 |   MUL    |   Register   | r1 * r2; r1: Low, rZ: High                         |   5
+0x185 |   MUL    |   Absolute   | mem[Addr] * Const; mem[Addr]: Low, rZ: High        |   5
+0x1c5 |   MUL    |   Absolute   | mem[Addr] * r1; mem[Addr]: Low, rZ: High           |   5
+0x205 |   MUL    |   Absolute   | r1 * mem[Addr]; r1: Low, rZ: High                  |   5
+0x285 |   MUL    |   Banked     | mem[BK + r1] * Const; mem[BK + r1]: Low, rZ: High  |   6
+0x2c5 |   MUL    |   Banked     | mem[BK + r1] * r2; mem[BK + r1]: Low, rZ: High     |   6
+0x305 |   MUL    |   Banked     | r1 * mem[BK + r2]; r1: Low, rZ: High               |   6
+0x385 |   MUL    |   Indexed    | mem[Addr + r1] * r2; mem[Addr + r1]: Low, rZ: High |   7
+0x3c5 |   MUL    |   Indexed    | r1 * mem[Addr + r2]; r1: Low, rZ: High             |   7
 
 Code  | Mnemonic | Address Mode | Execution                                      | Cycles^
-0x086 |   DIV    |   Immediate  | r1 /= Const; rZ = mod(Const)                   |   4
-0x106 |   DIV    |   Register   | r1 /= r2; rZ = mod(r2)                         |   4
-0x186 |   DIV    |   Absolute   | mem[Addr] /= Const; rZ = mod(Const)            |   4
-0x1c6 |   DIV    |   Absolute   | mem[Addr] /= r1; rZ = mod(r1)                  |   4
-0x206 |   DIV    |   Absolute   | r1 /= mem[Addr]; rZ = mod(mem[Addr])           |   4
-0x286 |   DIV    |   Banked     | mem[BK + r1] /= Const; rZ = mod(Const)         |   5
-0x2c6 |   DIV    |   Banked     | mem[BK + r1] /= r2; rZ = mod(r2)               |   5
-0x306 |   DIV    |   Banked     | r1 /= mem[BK + r2]; rZ = mod(mem[BK + r2])     |   5
-0x386 |   DIV    |   Indexed    | mem[Addr + r1] /= r2; rZ = mod(mem[Addr + r1]) |   6
-0x3c6 |   DIV    |   Indexed    | r1 /= mem[Addr + r2]; rZ = mod(mem[Addr + r2]) |   6
+0x086 |   DIV    |   Immediate  | r1 /= Const; rZ = mod(Const)                   |   5
+0x106 |   DIV    |   Register   | r1 /= r2; rZ = mod(r2)                         |   5
+0x186 |   DIV    |   Absolute   | mem[Addr] /= Const; rZ = mod(Const)            |   5
+0x1c6 |   DIV    |   Absolute   | mem[Addr] /= r1; rZ = mod(r1)                  |   5
+0x206 |   DIV    |   Absolute   | r1 /= mem[Addr]; rZ = mod(mem[Addr])           |   5
+0x286 |   DIV    |   Banked     | mem[BK + r1] /= Const; rZ = mod(Const)         |   6
+0x2c6 |   DIV    |   Banked     | mem[BK + r1] /= r2; rZ = mod(r2)               |   6
+0x306 |   DIV    |   Banked     | r1 /= mem[BK + r2]; rZ = mod(mem[BK + r2])     |   6
+0x386 |   DIV    |   Indexed    | mem[Addr + r1] /= r2; rZ = mod(mem[Addr + r1]) |   7
+0x3c6 |   DIV    |   Indexed    | r1 /= mem[Addr + r2]; rZ = mod(mem[Addr + r2]) |   7

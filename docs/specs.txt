@@ -23,8 +23,8 @@ Code | Mnemonic | Operation   | Cycles^ | Flags
 0x02 |   SUB    | A += ~B + C |    2    | OCNZ
 0x03 |   INC    | A += 1      |    1    | NZ
 0x04 |   DEC    | A -= 1      |    1    | NZ
-0x05 |   MUL    | A *= B      |    2    | OCNZ
-0x06 |   DIV    | A /= B      |    2    | OCNZ
+0x05 |   MUL    | A *= B      |    3    | OCNZ
+0x06 |   DIV    | A /= B      |    3    | OCNZ
 
 * Note: See opcodes.txt for the Instructions codes with each address mode.
 
