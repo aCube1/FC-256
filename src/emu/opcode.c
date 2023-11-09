@@ -1,6 +1,9 @@
 #include "emu/opcode.h"
 
+#include "emu/cpu.h"
 #include "emu/operand.h"
+
+#include <assert.h>
 
 static inline void setNegativeZero(CPU *cpu, u16 data) {
 	cpu->status = bitSet(cpu->status, STATUS_ZERO, data == 0x00);
@@ -12,9 +15,7 @@ static inline void setCarry(CPU *cpu, u32 data) {
 }
 
 static inline void setOverflow(CPU *cpu, u16 data1, u16 data2, u32 result) {
-	bool is_overflow = (data1 ^ result) & (data2 ^ result) & 0x8000 != 0x00;
-
-	cpu->status = bitSet(cpu->status, STATUS_OVERFLOW, is_overflow);
+	cpu->status = bitSet(cpu->status, STATUS_OVERFLOW, (data1 ^ result) & (data2 ^ result) & 0x8000 != 0x00);
 }
 
 AddrHandler opcode_addresses[ADDR_COUNT] = {
@@ -23,8 +24,7 @@ AddrHandler opcode_addresses[ADDR_COUNT] = {
 };
 
 OpcodeHandler opcode_handlers[OPCODE_COUNT] = {
-	opcodeMOV,
-	opcodeADD,
+	opcodeMOV, opcodeADD, opcodeSUB, opcodeINC, opcodeDEC, opcodeMUL, opcodeDIV,
 };
 
 u8 addrREL(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
@@ -32,7 +32,7 @@ u8 addrREL(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
 	(void)first_reg;
 	(void)second_reg;
 
-	cpu->op1 = (Operand) {
+	cpu->dest = (Operand) {
 		.type = OT_OFFSET,
 		.offset = cpuMemRead16(cpu, cpu->regs[REG_PC]),
 	};
@@ -47,11 +47,11 @@ u8 addrIMM(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
 	(void)addr_mode;
 	(void)second_reg;
 
-	cpu->op1 = (Operand) {
+	cpu->dest = (Operand) {
 		.type = OT_REGISTER,
 		.reg = first_reg,
 	};
-	cpu->op2 = (Operand) {
+	cpu->src = (Operand) {
 		.type = OT_CONSTANT,
 		.constant = cpuMemRead16(cpu, cpu->actual_pc),
 	};
@@ -65,17 +65,17 @@ u8 addrIMM(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
 u8 addrREG(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
 	switch (addr_mode) {
 	case ADDR_REG_1:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_REGISTER,
 			.reg = first_reg,
 		};
 		return 1;
 	case ADDR_REG_2:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_REGISTER,
 			.reg = first_reg,
 		};
-		cpu->op2 = (Operand) {
+		cpu->src = (Operand) {
 			.type = OT_REGISTER,
 			.reg = second_reg,
 		};
@@ -93,40 +93,40 @@ u8 addrABS(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
 
 	switch (addr_mode) {
 	case ADDR_ABS_1:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = cpuMemRead24(cpu, cpu->actual_pc),
 		};
 		cycles = 1;
 		break;
 	case ADDR_ABS_2:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = cpuMemRead24(cpu, cpu->actual_pc),
 		};
-		cpu->op2 = (Operand) {
+		cpu->src = (Operand) {
 			.type = OT_CONSTANT,
 			.constant = cpuMemRead16(cpu, cpu->actual_pc + 3),
 		};
 		cycles = 2;
 		break;
 	case ADDR_ABS_3:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = cpuMemRead24(cpu, cpu->actual_pc),
 		};
-		cpu->op2 = (Operand) {
+		cpu->src = (Operand) {
 			.type = OT_REGISTER,
 			.reg = first_reg,
 		};
 		cycles = 2;
 		break;
 	case ADDR_ABS_4:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_REGISTER,
 			.reg = first_reg,
 		};
-		cpu->op2 = (Operand) {
+		cpu->src = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = cpuMemRead24(cpu, cpu->actual_pc),
 		};
@@ -152,40 +152,40 @@ u8 addrBNK(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
 
 	switch (addr_mode) {
 	case ADDR_BNK_1:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = (bank << 16) | cpu->regs[first_reg],
 		};
 		cycles = 2;
 		break;
 	case ADDR_BNK_2:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = (bank << 16) | cpu->regs[first_reg],
 		};
-		cpu->op2 = (Operand) {
+		cpu->src = (Operand) {
 			.type = OT_CONSTANT,
 			.constant = cpuMemRead16(cpu, cpu->actual_pc + 1),
 		};
 		cycles = 3;
 		break;
 	case ADDR_BNK_3:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = (bank << 16) | cpu->regs[first_reg],
 		};
-		cpu->op2 = (Operand) {
+		cpu->src = (Operand) {
 			.type = OT_REGISTER,
 			.reg = second_reg,
 		};
 		cycles = 3;
 		break;
 	case ADDR_BNK_4:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_REGISTER,
 			.reg = first_reg,
 		};
-		cpu->op2 = (Operand) {
+		cpu->src = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = (bank << 16) | cpu->regs[second_reg],
 		};
@@ -211,29 +211,29 @@ u8 addrIDX(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
 
 	switch (addr_mode) {
 	case ADDR_IDX_1:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = addr + cpu->regs[first_reg],
 		};
 		cycles = 3;
 		break;
 	case ADDR_IDX_2:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = addr + cpu->regs[first_reg],
 		};
-		cpu->op2 = (Operand) {
+		cpu->src = (Operand) {
 			.type = OT_REGISTER,
 			.reg = second_reg,
 		};
 		cycles = 4;
 		break;
 	case ADDR_IDX_3:
-		cpu->op1 = (Operand) {
+		cpu->dest = (Operand) {
 			.type = OT_REGISTER,
 			.reg = first_reg,
 		};
-		cpu->op2 = (Operand) {
+		cpu->src = (Operand) {
 			.type = OT_ADDRESS,
 			.addr = addr + cpu->regs[second_reg],
 		};
@@ -250,43 +250,155 @@ u8 addrIDX(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg) {
 }
 
 u8 opcodeMOV(CPU *cpu) {
-	u16 data = operandUnwrap(cpu, &cpu->op2);
+	u16 data = operandUnwrap(cpu, &cpu->src);
 
-	switch (cpu->op1.type) {
+	switch (cpu->dest.type) {
 	case OT_REGISTER:
-		cpu->regs[cpu->op1.reg] = data;
+		cpu->regs[cpu->dest.reg] = data;
 		break;
 	case OT_ADDRESS:
-		cpuMemWrite16(cpu, cpu->op1.addr, data);
+		cpuMemWrite16(cpu, cpu->dest.addr, data);
 		break;
 	default:
 		break;
 	}
 
 	setNegativeZero(cpu, data);
-
 	return 1;
 }
 
 u8 opcodeADD(CPU *cpu) {
-	u16 data = operandUnwrap(cpu, &cpu->op1);
-	u16 add = operandUnwrap(cpu, &cpu->op2);
-	u32 result = data + add;
+	u16 data = operandUnwrap(cpu, &cpu->dest);
+	u16 add = operandUnwrap(cpu, &cpu->src);
 
-	setNegativeZero(cpu, result);
-	setCarry(cpu, result);
-	setOverflow(cpu, data, add, result);
+	u32 result = data + add + bitGet(cpu->status, STATUS_CARRY);
 
-	switch (cpu->op1.type) {
+	switch (cpu->dest.type) {
 	case OT_REGISTER:
-		cpu->regs[cpu->op1.reg] = result;
+		cpu->regs[cpu->dest.reg] = result;
 		break;
 	case OT_OFFSET:
-		cpuMemWrite16(cpu, cpu->op1.addr, result);
+		cpuMemWrite16(cpu, cpu->dest.addr, result);
 		break;
 	default:
 		break;
 	}
 
+	setNegativeZero(cpu, result);
+	setCarry(cpu, result);
+	setOverflow(cpu, data, add, result);
 	return 2;
+}
+
+u8 opcodeSUB(CPU *cpu) {
+	/* NOTE: The SUB instruction is just the inverse of the ADD instruction.
+	 * Learn about in this article:
+	 * 	https://www.middle-engine.com/blog/posts/2020/06/23/programming-the-nes-the-6502-in-detail#subtraction-as-addition
+	 */
+
+	switch (cpu->src.type) {
+	case OT_REGISTER:
+		cpu->src.reg = ~cpu->src.reg;
+		break;
+	case OT_CONSTANT:
+		cpu->src.constant = ~cpu->src.constant;
+		break;
+	case OT_ADDRESS:
+		/* HACK: Just trick the opcodeADD. */
+		cpu->src.type = OT_CONSTANT;
+		cpu->src.constant = ~cpuMemRead16(cpu, cpu->src.addr);
+		break;
+	default:
+		return 2; /* Do absolutely nothing... */
+	}
+
+	return opcodeADD(cpu);
+}
+
+u8 opcodeINC(CPU *cpu) {
+	u16 data = operandUnwrap(cpu, &cpu->dest) + 1;
+
+	switch (cpu->dest.type) {
+	case OT_REGISTER:
+		cpu->regs[cpu->dest.reg] = data;
+		break;
+	case OT_ADDRESS:
+		cpuMemWrite16(cpu, cpu->dest.addr, data);
+		break;
+	default:
+		break;
+	}
+
+	setNegativeZero(cpu, data);
+	return 1;
+}
+
+u8 opcodeDEC(CPU *cpu) {
+	u16 data = operandUnwrap(cpu, &cpu->dest) - 1;
+
+	switch (cpu->dest.type) {
+	case OT_REGISTER:
+		cpu->regs[cpu->dest.reg] = data;
+		break;
+	case OT_ADDRESS:
+		cpuMemWrite16(cpu, cpu->dest.addr, data);
+		break;
+	default:
+		break;
+	}
+
+	setNegativeZero(cpu, data);
+	return 1;
+}
+
+u8 opcodeMUL(CPU *cpu) {
+	u16 data = operandUnwrap(cpu, &cpu->dest);
+	u16 mul = operandUnwrap(cpu, &cpu->src);
+
+	u32 result = data * mul;
+
+	/* Store low 16 bits */
+	switch (cpu->dest.type) {
+	case OT_REGISTER:
+		cpu->regs[cpu->dest.reg] = result & 0xffff;
+		break;
+	case OT_OFFSET:
+		cpuMemWrite16(cpu, cpu->dest.addr, result & 0xffff);
+		break;
+	default:
+		break;
+	}
+
+	cpu->regs[REG_Z] = result >> 16; /* Store high 16 bits on rZ. */
+
+	setNegativeZero(cpu, result);
+	setCarry(cpu, result);
+	setOverflow(cpu, data, mul, result);
+	return 3;
+}
+
+u8 opcodeDIV(CPU *cpu) {
+	u16 data = operandUnwrap(cpu, &cpu->dest);
+	u16 div = operandUnwrap(cpu, &cpu->src);
+
+	u32 result = div != 0 ? data / div : 0xffff;
+
+	/* Store remainder on rZ. */
+	cpu->regs[REG_Z] = div != 0 ? data % div : data;
+
+	switch (cpu->dest.type) {
+	case OT_REGISTER:
+		cpu->regs[cpu->dest.reg] = result;
+		break;
+	case OT_OFFSET:
+		cpuMemWrite16(cpu, cpu->dest.addr, result);
+		break;
+	default:
+		break;
+	}
+
+	setNegativeZero(cpu, result);
+	setCarry(cpu, result);
+	setOverflow(cpu, data, div, result);
+	return 3;
 }

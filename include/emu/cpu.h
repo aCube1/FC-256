@@ -47,8 +47,8 @@ typedef struct CPU {
 	/* Internal private data */
 	u16 cycles;
 
-	Operand op1;
-	Operand op2;
+	Operand dest;
+	Operand src;
 
 	u16 opcode;
 } CPU;
