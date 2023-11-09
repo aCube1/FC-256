@@ -19,24 +19,24 @@ int main(void) {
 	cpuReset(&cpu);
 
 	/* TODO: Remove later. */
-	char status_rep[9] = { 0 };
-	status_rep[0] = '*';
-	status_rep[1] = '*';
-	status_rep[2] = '*';
+	char status_msg[9] = { 0 };
+	status_msg[0] = '*';
+	status_msg[1] = '*';
+	status_msg[2] = '*';
 
 	while (cpu.actual_pc <= 0xff8008 || cpu.cycles != 0) {
 		cpuClock(&cpu);
 
 		if (cpu.cycles == 0) {
 			/* TODO: Remove later. */
-			status_rep[3] = bitGet(cpu.status, STATUS_INTERRUPT) ? 'I' : '-';
-			status_rep[4] = bitGet(cpu.status, STATUS_OVERFLOW) ? 'O' : '-';
-			status_rep[5] = bitGet(cpu.status, STATUS_CARRY) ? 'C' : '-';
-			status_rep[6] = bitGet(cpu.status, STATUS_NEGATIVE) ? 'N' : '-';
-			status_rep[7] = bitGet(cpu.status, STATUS_ZERO) ? 'Z' : '-';
+			status_msg[3] = bitGet(cpu.status, STATUS_INTERRUPT) ? 'I' : '-';
+			status_msg[4] = bitGet(cpu.status, STATUS_OVERFLOW) ? 'O' : '-';
+			status_msg[5] = bitGet(cpu.status, STATUS_CARRY) ? 'C' : '-';
+			status_msg[6] = bitGet(cpu.status, STATUS_NEGATIVE) ? 'N' : '-';
+			status_msg[7] = bitGet(cpu.status, STATUS_ZERO) ? 'Z' : '-';
 
 			log_debug("PC: %#x -> rC: %#x | rX: %#x ", cpu.actual_pc, cpu.regs[REG_C], cpu.regs[REG_X]);
-			log_debug("^ Status: %#x -> %s", cpu.status, status_rep);
+			log_debug("^ Status: %#x -> %s", cpu.status, status_msg);
 		}
 	}
 
