@@ -1,8 +1,23 @@
-(,) : ; Ignore me!
-$(+ -) ; Ignore me too!!
+ADD
+DEC
+DIV
+INC
+MOV
+MUL
+PC
+rA
+rB
+rC
+rX
+rY
+rZ
+SP
+SUB
 
-
-
-mov
-
-0x6942
+(
+)
+,
+$
+:
++
+-

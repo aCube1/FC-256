@@ -6,23 +6,21 @@
 typedef enum TokenType {
 	/* Keywords */
 	TOK_ADD,
-	TOK_ADC,
+	TOK_DEC,
 	TOK_DIV,
 	TOK_INC,
 	TOK_MOV,
-	TOK_SUB,
 	TOK_MUL,
-	TOK_SBC,
-	TOK_DEC,
-
-	/* Registers */
+	TOK_PC,
 	TOK_RA,
 	TOK_RB,
 	TOK_RC,
 	TOK_RX,
 	TOK_RY,
 	TOK_RZ,
-	TOK_LAST_KEYWORD = TOK_RZ,
+	TOK_SP,
+	TOK_SUB,
+	TOK_LAST_KEYWORD = TOK_SUB,
 
 	/* Symbols */
 	TOK_LPAREN,

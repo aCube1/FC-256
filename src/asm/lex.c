@@ -12,22 +12,20 @@
 static const char *tokens[] = {
 	/* Instructions */
 	[TOK_ADD] = "add",
-	[TOK_ADC] = "adc",
 	[TOK_DEC] = "dec",
 	[TOK_DIV] = "div",
 	[TOK_INC] = "inc",
 	[TOK_MOV] = "mov",
 	[TOK_MUL] = "mul",
-	[TOK_SBC] = "sbc",
-	[TOK_SUB] = "sub",
-
-	/* Registers */
+	[TOK_PC] = "pc",
 	[TOK_RA] = "ra",
 	[TOK_RB] = "rb",
 	[TOK_RC] = "rc",
 	[TOK_RX] = "rx",
 	[TOK_RY] = "ry",
 	[TOK_RZ] = "rz",
+	[TOK_SP] = "sp",
+	[TOK_SUB] = "sub",
 
 	/* Symbols */
 	[TOK_LPAREN] = "(",
@@ -209,6 +207,9 @@ static TokenType keyword(Lexer *lex, Token *out) {
 		}
 		c = next(lex, NULL, true);
 	}
+
+	/* Convert buffer to lowercase */
+	strntolower(lex->buf, lex->buflen);
 
 	void *token = bsearch(&lex->buf, tokens, TOK_LAST_KEYWORD + 1, sizeof(tokens[0]), keywordCompare);
 	if (token == NULL) {

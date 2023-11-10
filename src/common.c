@@ -2,6 +2,10 @@
 
 #include "log/log.h"
 
+#include <ctype.h>
+#include <limits.h>
+#include <string.h>
+
 usize bitGetN(usize data, u8 pos, usize mask) {
 	return (data >> pos) & mask;
 }
@@ -40,4 +44,10 @@ void *xrealloc(void *ptr, size_t size) {
 	}
 
 	return ptr;
+}
+
+void strntolower(char *str, usize len) {
+	for (usize i = 0; i < len; i += 1) {
+		str[i] = tolower(str[i]);
+	}
 }
