@@ -3,7 +3,6 @@
 #include "log/log.h"
 
 #include <ctype.h>
-#include <limits.h>
 #include <string.h>
 
 usize bitGetN(usize data, u8 pos, usize mask) {
@@ -44,6 +43,18 @@ void *xrealloc(void *ptr, size_t size) {
 	}
 
 	return ptr;
+}
+
+char *xstrndup(const char *str, usize len) {
+	char *dup = malloc(len + 1);
+	if (dup == NULL && len != 0) {
+		log_fatal("Unable to duplicate string!");
+		exit(EXIT_FAILURE);
+	}
+
+	memcpy(dup, str, len);
+	dup[len] = '\0';
+	return dup;
 }
 
 void strntolower(char *str, usize len) {

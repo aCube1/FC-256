@@ -193,6 +193,7 @@ static void literal(Lexer *lex, Token *out) {
 }
 
 static int keywordCompare(const void *v1, const void *v2) {
+
 	return strcmp(*(const char **)v1, *(const char **)v2);
 }
 
@@ -209,9 +210,10 @@ static TokenType keyword(Lexer *lex, Token *out) {
 	}
 
 	/* Convert buffer to lowercase */
-	strntolower(lex->buf, lex->buflen);
+	char *buf = xstrndup(lex->buf, lex->buflen);
+	strntolower(buf, lex->buflen);
 
-	void *token = bsearch(&lex->buf, tokens, TOK_LAST_KEYWORD + 1, sizeof(tokens[0]), keywordCompare);
+	void *token = bsearch(&buf, tokens, TOK_LAST_KEYWORD + 1, sizeof(tokens[0]), keywordCompare);
 	if (token == NULL) {
 		error(out->location, "Unknown keyword %s", lex->buf);
 	}
@@ -219,6 +221,7 @@ static TokenType keyword(Lexer *lex, Token *out) {
 	out->type = (const char **)token - tokens;
 
 	clearBuffer(lex);
+	free(buf);
 	return out->type;
 }
 
@@ -301,8 +304,8 @@ TokenType lexScan(Lexer *lex, Token *out) {
 			stderr, "%zd - %zd:%zd: Syntax Error: Unexpected character\n", lex->location.fileid, lex->location.lineno,
 			lex->location.colno
 		);
-
 		/* NOLINTEND(cert-err33-c) */
+
 		exit(EXIT_FAILURE);
 	}
 

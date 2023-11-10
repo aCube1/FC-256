@@ -12,6 +12,7 @@ inline usize bitSet(usize data, u8 pos, bool enable);
 void *xcalloc(usize count, usize size);
 void *xrealloc(void *ptr, usize size);
 
+char *xstrndup(const char *str, usize len);
 void strntolower(char *str, usize len);
 
 #endif /* _COMMON_H_ */
