@@ -1,0 +1,12 @@
+======== Assembly EBNF Syntax ========
+<instr> ::= <mnemonic> [ <operand> [',' <operand> ]]
+
+<operand> ::= <exp> | <reg> | '(' <address> ')'
+
+<address> ::= LongByte [':' <reg> ] | Byte ':' <reg>
+
+<exp> ::= Number
+
+<reg> ::= CaseInsensitiveRegister
+
+<mnemonic> ::= CaseInsensitiveMnemonic
