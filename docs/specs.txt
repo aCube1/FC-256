@@ -23,48 +23,50 @@ Encoding: RRRRRRRR-AAAGIIII
  Code  | Mnemonic | Operation                    | Flags | Cycles^
 0b0000 |  NOP     | Do nothing for this cycle    | ----- |   1
 0b0001 |  HLT     | Wait for next interrupt      | ----- |   1
-0b0010 |  INC     | A += 1                       | ---NZ |   1
-0b0011 |  DEC     | A -= 1                       | ---NZ |   1
-0b0100 |  CLR     | ST &= ~Flags                 | IOCNZ |   1
-0b0101 |  SET     | ST |= Flags                  | IOCNZ |   1
-0b0110 |  POP     | A = StackTop; ST -= 2        | ---NZ |   2
-0b0111 |  PSH     | SP += 2; StackTop = A        | ---NZ |   2
-0b1000 |  JPF     | PC = A if ST & Flags         | ----- |   2
-0b1001 |  JNF     | PC = A if not (ST & Flags)   | ----- |   2
-0b1010 |  JMP     | PC = A                       | ----- |   2
-0b1011 |  JSR     | Push PB; Push PC; PC = A     | ----- |   3
-0b1100 |  RET     | PC = Pop; PB = Pop           | ----- |   3
-0b1101 |  RTI     | PC = Pop; PB = Pop; PS = Pop | IOCNZ |   3
-0b1110 |  XXX     |                              | ----- |   0
-0b1111 |  XXX     |                              | ----- |   0
+0b0010 |  INC     | A += 1                       | N--Z- |   1
+0b0011 |  DEC     | A -= 1                       | N--Z- |   1
+0b0100 |  NEG     | A = ~A                       | N--Z- |   1
+0b0101 |  CLR     | ST &= ~Flags                 | NOIZC |   1
+0b0110 |  SET     | ST |= Flags                  | NOIZC |   1
+0b0111 |  POP     | A = StackTop; SP -= 2        | N--Z- |   2
+0b1000 |  PSH     | SP += 2; StackTop = A        | N--Z- |   2
+0b1001 |  BIF     | PC += O if ST & Flags        | ----- |   2
+0b1010 |  BNF     | PC += O if not (ST & Flags)  | ----- |   2
+0b1011 |  BRA     | PC += O                      | ----- |   2
+0b1100 |  JMP     | PC = A                       | ----- |   2
+0b1101 |  JSR     | Push PB; Push PC; PC = A     | ----- |   3
+0b1110 |  RET     | PC = Pop; PB = Pop           | ----- |   3
+0b1111 |  RTI     | PC = Pop; PB = Pop; ST = Pop | NOIZC |   3
 
 ==== Group - 1 ====
- Code  | Mnemonic | Operation      | Flags | Cycles^
-0b0000 |  MOV     | A = B          | ---NZ |   1
-0b0001 |  MVB     | LByte A = B    | ---NZ |   1
-0b0010 |  ADD     | A += B + C     | -OCNZ |   2
-0b0011 |  SUB     | A += ~B + C    | -OCNZ |   2
-0b0100 |  MUL*    | A *= B         | -OCNZ |   2
-0b0101 |  DIV**   | A /= B         | -OCNZ |   2
-0b0110 |  SHL     | A <<= B        | --CNZ |   2
-0b0111 |  SHR     | A >>= B        | --CNZ |   2
-0b1000 |  ROL     | Rotate A left  | --CNZ |   2
-0b1001 |  ROR     | Rotate A right | --CNZ |   2
-0b1010 |  CMP***  | A - B          | --CNZ |   2
-0b1011 |  AND     | A &= B         | ---NZ |   2
-0b1100 |  IOR     | A |= B         | ---NZ |   2
-0b1101 |  XOR     | A ^= B         | ---NZ |   2
-0b1110 |  XXX     |                | ----- |   0
-0b1111 |  XXX     |                | ----- |   0
+ Code  | Mnemonic | Operation              | Flags | Cycles^
+0b0000 |  MOV     | A = B                  | N--Z- |   1
+0b0001 |  AND     | A &= B                 | N--Z- |   1
+0b0010 |  IOR     | A |= B                 | N--Z- |   1
+0b0011 |  XOR     | A ^= B                 | N--Z- |   1
+0b0100 |  BIT*    | A * B                  | NO-Z- |   1
+0b0101 |  ADD     | A += B + C             | NO-ZC |   2
+0b0110 |  SUB     | A += ~B + C            | NO-ZC |   2
+0b0111 |  SHL     | A <<= B                | N--ZC |   2
+0b1000 |  SHR     | A >>= B                | N--ZC |   2
+0b1001 |  ROL     | Rotate A left B times  | N--ZC |   2
+0b1010 |  ROR     | Rotate A right B times | N--ZC |   2
+0b1011 |  CMP**   | A - B                  | N--ZC |   2
+0b1100 |  MUL***  | A *= B                 | NO-ZC |   4
+0b1101 |  MLS***  | Signed A *= Signed B   | NO-ZC |   4
+0b1110 |  DIV**** | A /= B                 | NO-ZC |   4
+0b1111 |  DVS**** | Signed A /= Signed B   | NO-ZC |   4
 
-* MUL: The first word is stored in "A", and the second word is pushed
+* BIT: Zero: A & B; Negative: bit 15 of B; Overflow: bit 14 of B.
+
+** CMP: Carry: A >= B; Negative: bit 15 of A; Zero: A == B.
+
+*** MUL: The first word is stored in "A", and the second word is pushed
 into the stack.
 
-** DIV: The division result is stored in "A", and the remainder is pushed into
+**** DIV: The division result is stored in "A", and the remainder is pushed into
 the stack. Division by zero always produce the result of 0xffff,
 and a remainder that is equal to the dividend.
-
-*** CMP: Carry: A >= B; Negative: bit 15 of A; Zero: A == B.
 
 - Note: See opcodes.txt for the Instructions codes with each address mode.
 
@@ -76,18 +78,20 @@ Description: Registers can be accessed as operands. There are 16 possible
 Nibble of the selector specify the first and second Registers respectively.
 Making possible the selection of 256 combinations.
 
-  Bit  | Register   \    Bit  | Register
-0b0000 |    r0      /  0b1000 |    rA
-0b0001 |    r1      \  0b1001 |    rB
-0b0010 |    r2      /  0b1010 |    rC
-0b0011 |    r3      \  0b1011 |    rD
-0b0100 |    r4      /  0b1100 |    rE
-0b0101 |    r5      \  0b1101 |    rF
-0b0110 |    r6      /  0b1110 |    rX
-0b0111 |    r7      \  0b1111 |    rY
+ Code  | Register \   Code  | Register
+0b0000 |    r0    /  0b1000 |    rA
+0b0001 |    r1    \  0b1001 |    rB
+0b0010 |    r2    /  0b1010 |    rC
+0b0011 |    r3    \  0b1011 |    rD
+0b0100 |    r4    /  0b1100 |    rE
+0b0101 |    r5    \  0b1101 |    rF
+0b0110 |    r6    /  0b1110 |    rX
+0b0111 |    r7    \  0b1111 |    rY/SP*
 
-* Example: "MOV r3, rF"
+- Example: "MOV r3, rF"
 	The selector will be read as 11010011.
+
+* The rY register is the stack pointer current position.
 
 ==== Internal ====
 Description: Registers cannot be accessed as operands. Those registers
@@ -96,29 +100,26 @@ instructions or syscalls.
 
 == Registers ==
  Register | Name            | Bytes
-    PB    | Program Bank    |   1
-    PC    | Program Counter |   2
-    SB    | Stack Bank      |   1
-    SP    | Stack Pointer   |   2
     ST*   | Program Status  |   2
+    PB    | Program Bank    |   2
+    PC    | Program Counter |   2
 
-* Program Status(ST): -------- ---IOCNZ
-
+* Program Status(ST): NO------ -----IZC
 Flags | Description
-  Z   | Last operation resulted in 0.
-  N   | Last operation result operation has set the 15th bit.
-  C   | Last operation result caused overflow/underflow on 15th/0th bit.
-  O   | Last operation result has wrong bit sign. (e.g. 32767 + 1 = -32768)
+  C   | Last operation result caused overflow/underflow on 15 or 0 bit.
+  Z   | Last operation result is 0.
   I   | If set, the processor will ignore interrupt requests (IRQs).
+  O   | Last operation result has wrong bit sign. (e.g. 32767 + 1 = -32768)
+  N   | Last operation result operation has set the 15th bit.
 
 ======== Address Modes ========
 
 ==== Group - 0 ====
- Code | Name      | Operand | Cycles^ \   Code | Name    | Operand        | Cycles^
-0b000 | Implied   | ------- |   0     /  0b100 | Indexed | [Bank:r1]      |   2
-0b001 | Immediate | Const   |   1     \  0b101 | Flagged | @Flags         |   2
-0b010 | Register  | r1      |   1     /  0b110 | Flagged | [Addr], @Flags |   2
-0b011 | Absolute  | [Addr]  |   2     \  0b111 | Implied | -------------- |   0
+ Code | Name      | Operand | Cycles^ \   Code | Name     | Operand          | Cycles^
+0b000 | Implied   | ------- |   0     /  0b100 | Absolute | [Addr]           |   2
+0b001 | Immediate | Const   |   1     \  0b101 | Indexed  | [Bank:r1]        |   2
+0b010 | Register  | r1      |   1     /  0b110 | Relative | (Offset)         |   2
+0b011 | Flagged   | @Flags  |   1     \  0b111 | Relative | (Offset), @Flags |   2
 
 ==== Group - 1 ====
  Code | Name      | Operand       | Cycles^ \   Code | Name     | Operand          | Cycles^
@@ -127,10 +128,11 @@ Flags | Description
 0b010 | Absolute  | [Addr], Const |   2     /  0b110 | Indexed  | [Bank:r1], r2    |   3
 0b011 | Absolute  | [Addr], r1    |   2     \  0b111 | Indexed  | r2, [Bank:r2]    |   3
 
-* Bank  - u8
-* Flag  - u16 : Any of status flags.
-* Const - u16
-* Addr  - u24
+* Bank   - u16 : Second byte is ignored.
+* Flags  - u16 : Any of status flags.
+* Const  - u16 : Any value.
+* Offset - s16 : From -32768 to +32767.
+* Addr   - u32 : Fourth byte is ignored.
 
 ======== Memory Layout ========
       Range        | Name
@@ -145,20 +147,20 @@ System Vector table and store it at PC register.
 
 == Vectors Table ==
 Range       | Name   | Description
-0xffffff-fc | Stack  | Initial stack pointer
+0xffffff-fc | Stack  | Initial stack pointer offset
 0xfffffb-f8 | Reset* | PowerUp/Reset
 0xfffff7-f4 | IRQ**  | Interrupt Request
 0xfffff3-f0 | NMI**  | Non-Maskable Interrupt
 0xffffef-00 | Unused | Unused
 
-* Reset: Only activated when the CPU hard reset or soft reset. Take 7 cyles to
-complete.
+- Note: Even if the CPU reads 4 bytes, the program counter can only store
+3 bytes, so the last byte will be ignored.
+
+* Reset: Only activated when the CPU hard/soft reset or startup. Take 7 cyles
+to complete.
 
 ** IRQ/NMI: When activated, the current Program Counter and Program Status are
 pushed into the stack. Both take 7 cycles to complete
-
-- Note: Even if the CPU reads 4 bytes, the program counter can only store
-3 bytes, so the last byte will be ignored.
 
 ===============================================================
 ^ All cycles are arbitrary for now, there's no way real hardware could have
