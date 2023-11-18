@@ -21,52 +21,44 @@ Encoding: RRRRRRRR-AAAGIIII
 
 ==== Group - 0 ====
  Code  | Mnemonic | Operation                    | Flags | Cycles^
-0b0000 |  NOP     | Do nothing for this cycle    | ----- |   1
-0b0001 |  HLT     | Wait for next interrupt      | ----- |   1
-0b0010 |  INC     | A += 1                       | N--Z- |   1
-0b0011 |  DEC     | A -= 1                       | N--Z- |   1
-0b0100 |  NEG     | A = ~A                       | N--Z- |   1
-0b0101 |  CLR     | ST &= ~Flags                 | NOIZC |   1
-0b0110 |  SET     | ST |= Flags                  | NOIZC |   1
-0b0111 |  POP     | A = StackTop; SP -= 2        | N--Z- |   2
-0b1000 |  PSH     | SP += 2; StackTop = A        | N--Z- |   2
-0b1001 |  BIF     | PC += O if ST & Flags        | ----- |   2
-0b1010 |  BNF     | PC += O if not (ST & Flags)  | ----- |   2
-0b1011 |  BRA     | PC += O                      | ----- |   2
-0b1100 |  JMP     | PC = A                       | ----- |   2
-0b1101 |  JSR     | Push PB; Push PC; PC = A     | ----- |   3
-0b1110 |  RET     | PC = Pop; PB = Pop           | ----- |   3
-0b1111 |  RTI     | PC = Pop; PB = Pop; ST = Pop | NOIZC |   3
+0b0000 |   NOP    | Do nothing for a cycle       | ----- |   1
+0b0001 |   HLT    | Wait for next interrupt      | ----- |   1
+0b0010 |   INC    | D1 += 1                      | S--Z- |   1
+0b0011 |   DEC    | D1 -= 1                      | S--Z- |   1
+0b0100 |   NEG    | D1 = ~D1                     | S--Z- |   1
+0b0101 |   CLR    | ST &= ~D1                    | SOIZC |   1
+0b0110 |   SET    | ST |= D1                     | SOIZC |   1
+0b0111 |   POP    | D1 = StackTop; SP -= 2       | S--Z- |   2
+0b1000 |   PSH    | SP += 2; StackTop = D1       | S--Z- |   2
+0b1001 |   BIF    | PC += O if ST & D1           | ----- |   2
+0b1010 |   BNF    | PC += O if not (ST & D1)     | ----- |   2
+0b1011 |   BRA    | PC += O                      | ----- |   2
+0b1100 |   JMP    | PC = A                       | ----- |   2
+0b1101 |   JSR    | Push PB; Push PC; PC = A     | ----- |   3
+0b1110 |   RET    | PC = Pop; PB = Pop           | ----- |   3
+0b1111 |   RTI    | PC = Pop; PB = Pop; ST = Pop | SOIZC |   3
 
 ==== Group - 1 ====
- Code  | Mnemonic | Operation              | Flags | Cycles^
-0b0000 |  MOV     | A = B                  | N--Z- |   1
-0b0001 |  AND     | A &= B                 | N--Z- |   1
-0b0010 |  IOR     | A |= B                 | N--Z- |   1
-0b0011 |  XOR     | A ^= B                 | N--Z- |   1
-0b0100 |  BIT*    | A * B                  | NO-Z- |   1
-0b0101 |  ADD     | A += B + C             | NO-ZC |   2
-0b0110 |  SUB     | A += ~B + C            | NO-ZC |   2
-0b0111 |  SHL     | A <<= B                | N--ZC |   2
-0b1000 |  SHR     | A >>= B                | N--ZC |   2
-0b1001 |  ROL     | Rotate A left B times  | N--ZC |   2
-0b1010 |  ROR     | Rotate A right B times | N--ZC |   2
-0b1011 |  CMP**   | A - B                  | N--ZC |   2
-0b1100 |  MUL***  | A *= B                 | NO-ZC |   4
-0b1101 |  MLS***  | Signed A *= Signed B   | NO-ZC |   4
-0b1110 |  DIV**** | A /= B                 | NO-ZC |   4
-0b1111 |  DVS**** | Signed A /= Signed B   | NO-ZC |   4
+ Code  | Mnemonic | Operation                | Flags | Cycles^
+0b0000 |   MOV    | D1 = D2                  | S--Z- |   1
+0b0001 |   AND    | D1 &= D2                 | S--Z- |   1
+0b0010 |   IOR    | D1 |= D2                 | S--Z- |   1
+0b0011 |   XOR    | D1 ^= D2                 | S--Z- |   1
+0b0100 |   BIT    | D1 * D2                  | SO-Z- |   1
+0b0101 |   ADD    | D1 += D2 + C             | SO-ZC |   2
+0b0110 |   SUB    | D1 += ~D2 + C            | SO-ZC |   2
+0b0111 |   SHL    | D1 <<= D2                | S--ZC |   2
+0b1000 |   SHR    | D1 >>= D2                | S--ZC |   2
+0b1001 |   ROL    | Rotate D1 left D2 times  | S--ZC |   2
+0b1010 |   ROR    | Rotate D1 right D2 times | S--ZC |   2
+0b1011 |   CMP    | D1 - D2                  | S--ZC |   2
+0b1100 |   MUL**  | D1 *= D2                 | SO-ZC |   4
+0b1101 |   MLS**  | Signed D1 *= Signed D2   | SO-ZC |   4
+0b1110 |   DIV    | D1 /= D2                 | SO-ZC |   4
+0b1111 |   DVS    | Signed D1 /= Signed D2   | SO-ZC |   4
 
-* BIT: Zero: A & B; Negative: bit 15 of B; Overflow: bit 14 of B.
-
-** CMP: Carry: A >= B; Negative: bit 15 of A; Zero: A == B.
-
-*** MUL: The first word is stored in "A", and the second word is pushed
+*** MUL: The first word is stored in "D1", and the second word is pushed
 into the stack.
-
-**** DIV: The division result is stored in "A", and the remainder is pushed into
-the stack. Division by zero always produce the result of 0xffff,
-and a remainder that is equal to the dividend.
 
 - Note: See opcodes.txt for the Instructions codes with each address mode.
 
@@ -104,32 +96,31 @@ instructions or syscalls.
     PB    | Program Bank    |   2
     PC    | Program Counter |   2
 
-* Program Status(ST): NO------ -----IZC
-Flags | Description
-  C   | Last operation result caused overflow/underflow on 15 or 0 bit.
-  Z   | Last operation result is 0.
-  I   | If set, the processor will ignore interrupt requests (IRQs).
-  O   | Last operation result has wrong bit sign. (e.g. 32767 + 1 = -32768)
-  N   | Last operation result operation has set the 15th bit.
+= Program Status(ST) : SO------ -----IZC =
+Flag | Name             | Description
+ C   | Carry Flag       | Operation caused over/underflow on 15 or 0 bit.
+ Z   | Zero Flag        | Operation result is 0.
+ I   | Ignore Interrupt | If set, the processor will ignore interrupt requests.
+ O   | Overflow Flag    | Result has wrong bit sign. (e.g. 32767 + 1 = -32768)
+ S   | Sign Flag        | Result has set the 15th bit.
 
 ======== Address Modes ========
 
 ==== Group - 0 ====
- Code | Name      | Operand | Cycles^ \   Code | Name     | Operand          | Cycles^
-0b000 | Implied   | ------- |   0     /  0b100 | Absolute | [Addr]           |   2
-0b001 | Immediate | Const   |   1     \  0b101 | Indexed  | [Bank:r1]        |   2
-0b010 | Register  | r1      |   1     /  0b110 | Relative | (Offset)         |   2
-0b011 | Flagged   | @Flags  |   1     \  0b111 | Relative | (Offset), @Flags |   2
+ Code | Name      | Operand | Cycles^ \   Code | Name     | Operand         | Cycles^
+0b000 | Implied   | ------- |   0     /  0b100 | Indexed  | [Bank:r1]       |   3
+0b001 | Register  | r1      |   1     \  0b101 | Relative | (Offset)        |   2
+0b010 | Immediate | Const   |   2     /  0b110 | Relative | (Offset), Const |   4
+0b011 | Absolute  | [Addr]  |   3     \  0b111 | Implied  | --------------- |   0
 
 ==== Group - 1 ====
  Code | Name      | Operand       | Cycles^ \   Code | Name     | Operand          | Cycles^
-0b000 | Immediate | r1, Const     |   2     /  0b100 | Absolute | r1, [Addr]       |   2
-0b001 | Register  | r1, r2        |   2     \  0b101 | Indexed  | [Bank:r1], Const |   3
-0b010 | Absolute  | [Addr], Const |   2     /  0b110 | Indexed  | [Bank:r1], r2    |   3
-0b011 | Absolute  | [Addr], r1    |   2     \  0b111 | Indexed  | r2, [Bank:r2]    |   3
+0b000 | Register  | r1, r2        |   2     /  0b100 | Indexed  | [Bank:r1], Const |   4
+0b001 | Immediate | r1, Const     |   3     \  0b101 | Absolute | [Addr], r1       |   4
+0b010 | Indexed   | [Bank:r1], r2 |   3     /  0b110 | Absolute | r1, [Addr]       |   4
+0b011 | Indexed   | r1, [Bank:r2] |   3     \  0b111 | Absolute | [Addr], Const    |   5
 
 * Bank   - u16 : Second byte is ignored.
-* Flags  - u16 : Any of status flags.
 * Const  - u16 : Any value.
 * Offset - s16 : From -32768 to +32767.
 * Addr   - u32 : Fourth byte is ignored.
@@ -146,12 +137,13 @@ When a interrupt is requested or activated, the CPU will read 4 bytes from the
 System Vector table and store it at PC register.
 
 == Vectors Table ==
-Range       | Name   | Description
-0xffffff-fc | Stack  | Initial stack pointer offset
-0xfffffb-f8 | Reset* | PowerUp/Reset
-0xfffff7-f4 | IRQ**  | Interrupt Request
-0xfffff3-f0 | NMI**  | Non-Maskable Interrupt
-0xffffef-00 | Unused | Unused
+Range       | Name    | Description
+0xffffff-fc | Stack   | Initial stack pointer offset
+0xfffffb-f8 | Reset   | PowerUp/Reset
+0xfffff7-f4 | IRQ     | Interrupt Request
+0xfffff3-f0 | NMI     | Non-Maskable Interrupt
+0xffffef-eb | DivZero | Division by Zero
+0xffffea-00 | Unused  | RESERVED
 
 - Note: Even if the CPU reads 4 bytes, the program counter can only store
 3 bytes, so the last byte will be ignored.
@@ -159,8 +151,10 @@ Range       | Name   | Description
 * Reset: Only activated when the CPU hard/soft reset or startup. Take 7 cyles
 to complete.
 
-** IRQ/NMI: When activated, the current Program Counter and Program Status are
+* IRQ/NMI: When activated, the current Program Counter and Program Status are
 pushed into the stack. Both take 7 cycles to complete
+
+* DivZero: Only activated when a division is performed with a zero value.
 
 ===============================================================
 ^ All cycles are arbitrary for now, there's no way real hardware could have
