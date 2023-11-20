@@ -25,7 +25,7 @@ Encoding: RRRRRRRR-AAAGIIII
 0b0001 |   HLT    | Wait for next interrupt      | ----- |   1
 0b0010 |   INC    | D1 += 1                      | S--Z- |   1
 0b0011 |   DEC    | D1 -= 1                      | S--Z- |   1
-0b0100 |   NEG    | D1 = ~D1                     | S--Z- |   1
+0b0100 |   NOT    | D1 = ~D1                     | S--Z- |   1
 0b0101 |   CLR    | ST &= ~D1                    | SOIZC |   1
 0b0110 |   SET    | ST |= D1                     | SOIZC |   1
 0b0111 |   POP    | D1 = StackTop; SP -= 2       | S--Z- |   2
@@ -52,15 +52,12 @@ Encoding: RRRRRRRR-AAAGIIII
 0b1001 |   ROL    | Rotate D1 left D2 times  | S--ZC |   2
 0b1010 |   ROR    | Rotate D1 right D2 times | S--ZC |   2
 0b1011 |   CMP    | D1 - D2                  | S--ZC |   2
-0b1100 |   MUL**  | D1 *= D2                 | SO-ZC |   4
-0b1101 |   MLS**  | Signed D1 *= Signed D2   | SO-ZC |   4
-0b1110 |   DIV    | D1 /= D2                 | SO-ZC |   4
-0b1111 |   DVS    | Signed D1 /= Signed D2   | SO-ZC |   4
+0b1100 |   MUL    | D1 *= D2                 | SO-ZC |   4
+0b1101 |   MLS    | Signed D1 *= Signed D2   | SO-ZC |   4
+0b1110 |   DIV    | D1 /= D2                 | S*-ZC |   4
+0b1111 |   DVS    | Signed D1 /= Signed D2   | S*-ZC |   4
 
-*** MUL: The first word is stored in "D1", and the second word is pushed
-into the stack.
-
-- Note: See opcodes.txt for the Instructions codes with each address mode.
+- Note: See opcodes.txt for instructions documentation.
 
 ======== Registers ========
 
