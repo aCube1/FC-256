@@ -15,23 +15,7 @@ typedef struct {
 static const char *level_names[] = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 static const char *level_color[] = { "\x1b[94m", "\x1b[32m", "\x1b[36m", "\x1b[33m", "\x1b[31m", "\x1b[35m" };
 
-static void printMessage(LogData *data) {
-	char buf[16];
-	buf[strftime(buf, sizeof(buf), "%H:%M:%S", data->time)] = '\0';
-
-	/* NOLINTBEGIN(cert-err33-c) */
-	fprintf(
-		data->output, "%s %s[%s]\x1b[0m \x1b[90m%s:%d\x1b[0m - ", buf, level_color[data->level],
-		level_names[data->level], data->file, data->line
-	);
-	vfprintf(data->output, data->fmt, data->args);
-	fprintf(data->output, "%s", "\n");
-
-	fflush(data->output);
-	/* NOLINTEND(cert-err33-c) */
-}
-
-void logMessage(int level, const char *file, int line, const char *fmt, ...) {
+void log_message(int level, const char *file, int line, const char *fmt, ...) {
 	LogData data = {
 		.fmt = fmt,
 		.file = file,
@@ -39,6 +23,7 @@ void logMessage(int level, const char *file, int line, const char *fmt, ...) {
 		.level = level,
 		.output = stderr,
 	};
+	char buf[16];
 
 	if (!data.time) {
 		time_t timer = time(NULL);
@@ -46,6 +31,17 @@ void logMessage(int level, const char *file, int line, const char *fmt, ...) {
 	}
 
 	va_start(data.args, fmt);
-	printMessage(&data);
+	buf[strftime(buf, sizeof(buf), "%H:%M:%S", data.time)] = '\0';
+
+	/* NOLINTBEGIN(cert-err33-c) */
+	fprintf(
+		data.output, "%s %s[%s]\x1b[0m \x1b[90m%s:%d\x1b[0m - ", buf, level_color[data.level], level_names[data.level],
+		data.file, data.line
+	);
+	vfprintf(data.output, data.fmt, data.args);
+	fprintf(data.output, "%s", "\n");
+
+	fflush(data.output);
+	/* NOLINTEND(cert-err33-c) */
 	va_end(data.args);
 }

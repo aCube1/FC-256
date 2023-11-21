@@ -3,11 +3,8 @@
 
 #include "types.h"
 
-usize bitGetN(usize data, u8 pos, usize mask);
-usize bitSetN(usize data, u8 pos, usize mask, bool enable);
-
-inline usize bitGet(usize data, u8 pos);
-inline usize bitSet(usize data, u8 pos, bool enable);
+usize bit_getn(usize data, u8 pos, usize mask);
+usize bit_setn(usize data, u8 pos, usize mask, bool enable);
 
 void *xcalloc(usize count, usize size);
 void *xrealloc(void *ptr, usize size);

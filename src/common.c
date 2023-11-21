@@ -1,23 +1,17 @@
 #include "common.h"
 
-usize bitGetN(usize data, u8 pos, usize mask) {
+#include "log/log.h"
+
+usize bit_getn(usize data, u8 pos, usize mask) {
 	return (data >> pos) & mask;
 }
 
-usize bitSetN(usize data, u8 pos, usize mask, bool enable) {
+usize bit_setn(usize data, u8 pos, usize mask, bool enable) {
 	if (!enable) {
 		return data & ~(mask << pos);
 	}
 
 	return data | (mask << pos);
-}
-
-usize bitGet(usize data, u8 pos) {
-	return bitGetN(data, pos, 1);
-}
-
-usize bitSet(usize data, u8 pos, bool enable) {
-	return bitSetN(data, pos, 1, enable);
 }
 
 void *xcalloc(size_t count, size_t size) {
