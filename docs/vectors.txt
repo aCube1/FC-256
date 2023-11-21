@@ -1,0 +1,56 @@
+======== IRQ's, Exceptions and System Vectors ========
+When a interrupt is requested, the CPU does the following steps:
+- (IRQ/NMI) Wait instruction finishes executing.
+- (IRQ) Checks if I flag is set, otherwise continue the IRQ.
+- (Illegal Instruction) Increment PC by 2.
+- Pushes the Program Bank into the Stack.
+- Pushes the Program Counter into the Stack.
+- Pushes the Program Status into the Stack.
+- (IRQ/NMI) Set I flag to prevent interruption of current Interrupt Request.
+- Read PB from Vector Address, but throw the last byte to 0x00.
+- Read PC from Vector Address.
+
+
+==== 0xff-fc: Stack Address  ====
+- Contains the default stack address at the cpu reset.
+
+
+==== 0xfb-f8: Reset ====
+- Triggered when the CPU hard/soft reset or startup.
+- When triggered, just set the Program Bank and Program counter to the Vector
+Address.
+
+
+==== 0xf7-f4: Hardware IRQ ====
+- Triggered by a Hardware Request, and can be ignored if the Flag I of
+Program Status is set.
+- When triggered, the current Program Bank, Program Counter and Program Status
+are pushed into the Stack and the Flag I is set to prevent more Requests.
+- Takes 6 cycles to complete.
+
+
+==== 0xf3-f0: Hardware NMI ====
+- Triggered by a Hardware Request.
+- When triggered, the current Program Bank, Program Counter and Program Status
+are pushed into the Stack and the Flag I is set to prevent more Requests.
+- Takes 6 cycles to complete.
+
+
+==== 0xef-ec: Division by Zero ====
+- Triggered by DIV and DVS instructions when an attempt of Division by
+Zero is performed.
+- When triggered, the current Program Bank, Program Counter and Program Status
+are pushed into the Stack.
+- Takes 5 cycles to complete.
+
+
+==== 0xeb-e8: Illegal Instruction ====
+- Triggered when a undocumented/illegal instruction is executed.
+- When triggered, the current Program Bank, Program Counter and Program Status
+are pushed into the Stack.
+- Takes 6 cycles to complete.
+
+
+==== 0xe7-00: Unused ====
+- Currently unused. Users should not use this address range.
+- It's recommended to fill this memory area with 0xff.

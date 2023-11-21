@@ -83,9 +83,8 @@ Making possible the selection of 256 combinations.
 * The rY register is the stack pointer current position.
 
 ==== Internal ====
-Description: Registers cannot be accessed as operands. Those registers
-tracks the internal state of the CPU, which can only be accessed by
-instructions or syscalls.
+Description: Registers cannot be accessed as operands. Those registers tracks
+the internal state of the CPU, which can only be accessed by instructions.
 
 == Registers ==
  Register | Name            | Bytes
@@ -100,6 +99,8 @@ Flag | Name             | Description
  I   | Ignore Interrupt | If set, the processor will ignore interrupt requests.
  O   | Overflow Flag    | Result has wrong bit sign. (e.g. 32767 + 1 = -32768)
  S   | Sign Flag        | Result has set the 15th bit.
+
+- Note: The last byte by from Program Bank is always 0x00.
 
 ======== Address Modes ========
 
@@ -125,33 +126,26 @@ Flag | Name             | Description
 ======== Memory Layout ========
       Range        | Name
 0x000000..0x2fffff | General Purpose RAM
-0x300000..0x3fffff | System Usage
+0x300000..0x3fffff | System Usage/MMIO Registers
 0x400000..0xffffff | General Purpose ROM
 
 ==== System Vectors ====
-Description: The last 256 bytes from ROM memory is reserved to system vectors.
-When a interrupt is requested or activated, the CPU will read 4 bytes from the
-System Vector table and store it at PC register.
+The last 256 bytes from ROM memory are reserved to system vectors.
 
 == Vectors Table ==
-Range       | Name    | Description
-0xffffff-fc | Stack   | Initial stack pointer offset
-0xfffffb-f8 | Reset   | PowerUp/Reset
-0xfffff7-f4 | IRQ     | Interrupt Request
-0xfffff3-f0 | NMI     | Non-Maskable Interrupt
-0xffffef-eb | DivZero | Division by Zero
-0xffffea-00 | Unused  | RESERVED
+Range       | Name
+0xffffff-fc | Stack Address
+0xfffffb-f8 | Reset
+0xfffff7-f4 | Hardware IRQ
+0xfffff3-f0 | Hardware NMI
+0xffffef-ec | Division by Zero
+0xffffeb-e8 | Illegal Instruction
+0xffffe7-00 | Unused
 
-- Note: Even if the CPU reads 4 bytes, the program counter can only store
-3 bytes, so the last byte will be ignored.
+- Note: Even if the CPU reads 4 bytes, the address bus can only access 24-bits,
+so the last byte will be ignored.
 
-* Reset: Only activated when the CPU hard/soft reset or startup. Take 7 cyles
-to complete.
-
-* IRQ/NMI: When activated, the current Program Counter and Program Status are
-pushed into the stack. Both take 7 cycles to complete
-
-* DivZero: Only activated when a division is performed with a zero value.
+- Note: See vectors.txt for detailed documentation.
 
 ===============================================================
 ^ All cycles are arbitrary for now, there's no way real hardware could have
