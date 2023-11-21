@@ -9,7 +9,6 @@
 - Endianess: Little-Endian.
 
 ======== Instruction Layout ========
-Usage: <mnemonic> [operands]
 Encoding: RRRRRRRR-AAAGIIII
  Bit  | Symbol | Name              | Size
 00-03 |   I    | Opcode Identifier | 4
@@ -20,23 +19,23 @@ Encoding: RRRRRRRR-AAAGIIII
 ======== Instructions ========
 
 ==== Group - 0 ====
- Code  | Mnemonic | Operation                    | Flags | Cycles^
-0b0000 |   NOP    | Do nothing for a cycle       | ----- |   1
-0b0001 |   HLT    | Wait for next interrupt      | ----- |   1
-0b0010 |   INC    | D1 += 1                      | S--Z- |   1
-0b0011 |   DEC    | D1 -= 1                      | S--Z- |   1
-0b0100 |   NOT    | D1 = ~D1                     | S--Z- |   1
-0b0101 |   CLR    | ST &= ~D1                    | SOIZC |   1
-0b0110 |   SET    | ST |= D1                     | SOIZC |   1
-0b0111 |   POP    | D1 = StackTop; SP -= 2       | S--Z- |   2
-0b1000 |   PSH    | SP += 2; StackTop = D1       | S--Z- |   2
-0b1001 |   BIF    | PC += O if ST & D1           | ----- |   2
-0b1010 |   BNF    | PC += O if not (ST & D1)     | ----- |   2
-0b1011 |   BRA    | PC += O                      | ----- |   2
-0b1100 |   JMP    | PC = A                       | ----- |   2
-0b1101 |   JSR    | Push PB; Push PC; PC = A     | ----- |   3
-0b1110 |   RET    | PC = Pop; PB = Pop           | ----- |   3
-0b1111 |   RTI    | PC = Pop; PB = Pop; ST = Pop | SOIZC |   3
+ Code  | Mnemonic | Operation                      | Flags | Cycles^
+0b0000 |   NOP    | Do nothing for a cycle         | ----- |   1
+0b0001 |   HLT    | Wait for next interrupt        | ----- |   1
+0b0010 |   INC    | D1 += 1                        | S--Z- |   1
+0b0011 |   DEC    | D1 -= 1                        | S--Z- |   1
+0b0100 |   NOT    | D1 = ~D1                       | S--Z- |   1
+0b0101 |   CLR    | ST &= ~D1                      | SOIZC |   1
+0b0110 |   SET    | ST |= D1                       | SOIZC |   1
+0b0111 |   POP    | D1 = StackTop; SP -= 2         | S--Z- |   2
+0b1000 |   PSH    | SP += 2; StackTop = D1         | S--Z- |   2
+0b1001 |   BIF    | PC += O if ST & D1             | ----- |   2
+0b1010 |   BNF    | PC += O if not (ST & D1)       | ----- |   2
+0b1011 |   BRA    | PC += O                        | ----- |   2
+0b1100 |   JMP    | PC = A                         | ----- |   2
+0b1101 |   JSR    | Push HPC; Push LPC; PC = A     | ----- |   3
+0b1110 |   RET    | LPC = Pop; HPC = Pop           | ----- |   3
+0b1111 |   RTI    | LPC = Pop; HPC = Pop; ST = Pop | SOIZC |   3
 
 ==== Group - 1 ====
  Code  | Mnemonic | Operation                | Flags | Cycles^
@@ -63,8 +62,8 @@ Encoding: RRRRRRRR-AAAGIIII
 
 ==== General Purpose ====
 Description: Registers can be accessed as operands. There are 16 possible
-16-bit wide registers, provided by the selector. The first and the second
-Nibble of the selector specify the first and second Registers respectively.
+16-bit wide registers, provided by the selector. The low and the high Nibble of
+the selector specify the first and second Registers respectively.
 Making possible the selection of 256 combinations.
 
  Code  | Register \   Code  | Register
@@ -74,33 +73,31 @@ Making possible the selection of 256 combinations.
 0b0011 |    r3    \  0b1011 |    rD
 0b0100 |    r4    /  0b1100 |    rE
 0b0101 |    r5    \  0b1101 |    rF
-0b0110 |    r6    /  0b1110 |    rX
-0b0111 |    r7    \  0b1111 |    rY/SP*
+0b0110 |    r6    /  0b1110 |    rX/LSP*
+0b0111 |    r7    \  0b1111 |    rY/HSP*
 
 - Example: "MOV r3, rF"
 	The selector will be read as 11010011.
 
-* The rY register is the stack pointer current position.
+* The rX and rY registers are mirrors to the Stack Pointer internal register.
 
 ==== Internal ====
 Description: Registers cannot be accessed as operands. Those registers tracks
 the internal state of the CPU, which can only be accessed by instructions.
 
 == Registers ==
- Register | Name            | Bytes
-    ST*   | Program Status  |   2
-    PB    | Program Bank    |   2
-    PC    | Program Counter |   2
+ Register | Name            | Size
+    ST*   | Program Status  | u16
+    PC    | Program Counter | u32
+    SP    | Stack Pointer   | u32
 
 = Program Status(ST) : SO------ -----IZC =
 Flag | Name             | Description
- C   | Carry Flag       | Operation caused over/underflow on 15 or 0 bit.
+ C   | Carry Flag       | Operation caused over/underflow on bit 15 or 0.
  Z   | Zero Flag        | Operation result is 0.
  I   | Ignore Interrupt | If set, the processor will ignore interrupt requests.
  O   | Overflow Flag    | Result has wrong bit sign. (e.g. 32767 + 1 = -32768)
  S   | Sign Flag        | Result has set the 15th bit.
-
-- Note: The last byte by from Program Bank is always 0x00.
 
 ======== Address Modes ========
 
@@ -118,10 +115,10 @@ Flag | Name             | Description
 0b010 | Indexed   | [Bank:r1], r2 |   3     /  0b110 | Absolute | r1, [Addr]       |   4
 0b011 | Indexed   | r1, [Bank:r2] |   3     \  0b111 | Absolute | [Addr], Const    |   5
 
-* Bank   - u16 : Second byte is ignored.
+* Bank   - u16 : High byte must be 0x00.
 * Const  - u16 : Any value.
 * Offset - s16 : From -32768 to +32767.
-* Addr   - u32 : Fourth byte is ignored.
+* Addr   - u32 : Last byte must be 0x00.
 
 ======== Memory Layout ========
       Range        | Name
@@ -130,20 +127,19 @@ Flag | Name             | Description
 0x400000..0xffffff | General Purpose ROM
 
 ==== System Vectors ====
-The last 256 bytes from ROM memory are reserved to system vectors.
+Description: The ROM memory range 0xffff00 to 0xffffff is dedicated to
+Interrupt vectors.
 
 == Vectors Table ==
-Range       | Name
-0xffff00-e7 | Unused
-0xffffe8-eb | Illegal Instruction
-0xffffec-ef | Division by Zero
-0xfffff0-f3 | Hardware NMI
-0xfffff4-f7 | Hardware IRQ
-0xfffff8-fb | Reset
-0xfffffc-ff | Stack Address
-
-- Note: Even if the CPU reads 4 bytes, the address bus can only access 24-bits,
-so the last byte will be ignored.
+ Range  | Name
+0x00-e3 | Unused
+0xe4-e7 | Illegal Address
+0xe8-eb | Illegal Instruction
+0xec-ef | Division by Zero
+0xf0-f3 | Hardware NMI
+0xf4-f7 | Hardware IRQ
+0xf8-fb | Reset
+0xfc-ff | Stack Address
 
 - Note: See vectors.txt for detailed documentation.
 

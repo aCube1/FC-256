@@ -270,7 +270,7 @@ Opcode | Addr Mode | Operand          | Cycles
 
 
 ==== JMP - Jump Unconditionally ====
-- Set the program counter to the target memory address.
+- Set the Program Counter to the target memory address.
 
 == Status Register ==
 Carry Flag       | Not affected
@@ -286,8 +286,8 @@ Opcode | Addr Mode | Operand   | Cycles
 
 
 ==== JSR - Jump to Subroutine ====
-- Pushes the program bank and counter (minus one) into the Stack. Then set the
-program counter to the target memory address.
+- Pushes the Program Counter (minus one) into the Stack. Then set the
+Program Counter to the target memory address.
 
 == Status Register ==
 Carry Flag       | Not affected
@@ -347,15 +347,15 @@ Opcode | Addr Mode | Operand          | Cycles
 
 
 ==== MUL - Unsigned Multiply ====
-- Multiply D1 by D2, store the lower word of product in D1 and push the upper
-word into the Stack. The upper word is only pushed if the Carry Flag was set.
+- Multiply D1 by D2, store the Low Word of product in D1 and push the High
+Word into the Stack. The High Word is only pushed if the Carry Flag was set.
 
 == Status Register ==
-Carry Flag       | Set if upper word was pushed into the Stack
+Carry Flag       | Set if High Word was pushed into the Stack
 Zero Flag        | Set if product is Zero
 Ignore Interrupt | Not affected
-Overflow Flag    | Set if the upper word is Negative
-Sign Flag        | Set if the lower word is Negative
+Overflow Flag    | Set if the High Word is Negative
+Sign Flag        | Set if the Low Word is Negative
 
 == Encoding ==
 Opcode | Addr Mode | Operand          | Cycles
@@ -439,7 +439,7 @@ Opcode | Addr Mode | Operand   | Cycles
 
 ==== RET - Return from Subroutine ====
 - Used at the end of a subroutine to return to the calling routine. It pops the
-Program Bank and Counter from the Stack.
+Program Counter from the Stack.
 
 == Status Register ==
 Carry Flag       | Not affected
@@ -500,8 +500,8 @@ Opcode | Addr Mode | Operand          | Cycles
 
 
 ==== RTI - Return from Interrupt ====
-- Used at the end of a interrupt routine. It pops the Programg Status,
-Program Bank and Counter from the Stack.
+- Used at the end of a interrupt routine. It pops the Program Status,
+Program Counter from the Stack.
 
 == Status Register ==
 Carry Flag       | Set from Stack
