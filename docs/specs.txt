@@ -134,13 +134,13 @@ The last 256 bytes from ROM memory are reserved to system vectors.
 
 == Vectors Table ==
 Range       | Name
-0xffffff-fc | Stack Address
-0xfffffb-f8 | Reset
-0xfffff7-f4 | Hardware IRQ
-0xfffff3-f0 | Hardware NMI
-0xffffef-ec | Division by Zero
-0xffffeb-e8 | Illegal Instruction
-0xffffe7-00 | Unused
+0xffff00-e7 | Unused
+0xffffe8-eb | Illegal Instruction
+0xffffec-ef | Division by Zero
+0xfffff0-f3 | Hardware NMI
+0xfffff4-f7 | Hardware IRQ
+0xfffff8-fb | Reset
+0xfffffc-ff | Stack Address
 
 - Note: Even if the CPU reads 4 bytes, the address bus can only access 24-bits,
 so the last byte will be ignored.
