@@ -1,0 +1,106 @@
+#include "emu/opcode.h"
+
+#include "log/log.h"
+
+const Opcode op_table[OPCODE_COUNT] = {
+	{ "NOP", ADDR_IMP_0, op_nop, 1 }, { "HLT", ADDR_IMP_0, op_hlt, 1 }, { "???", ADDR_IMP_0, op_xxx, 1 },
+	{ "???", ADDR_IMP_0, op_xxx, 1 }, { "???", ADDR_IMP_0, op_xxx, 1 }, { "???", ADDR_IMP_0, op_xxx, 1 },
+	{ "???", ADDR_IMP_0, op_xxx, 1 }, { "???", ADDR_IMP_0, op_xxx, 1 }, { "???", ADDR_IMP_0, op_xxx, 1 },
+	{ "???", ADDR_IMP_0, op_xxx, 1 }, { "???", ADDR_IMP_0, op_xxx, 1 }, { "???", ADDR_IMP_0, op_xxx, 1 },
+	{ "???", ADDR_IMP_0, op_xxx, 1 }, { "???", ADDR_IMP_0, op_xxx, 1 }, { "RET", ADDR_IMP_0, op_ret, 4 },
+	{ "RTI", ADDR_IMP_0, op_rti, 4 }, { "MOV", ADDR_REG_0, op_mov, 3 }, { "AND", ADDR_REG_0, op_and, 3 },
+	{ "IOR", ADDR_REG_0, op_ior, 3 }, { "XOR", ADDR_REG_0, op_xor, 3 }, { "TST", ADDR_REG_0, op_tst, 3 },
+	{ "ADD", ADDR_REG_0, op_add, 4 }, { "SUB", ADDR_REG_0, op_sub, 4 }, { "SHL", ADDR_REG_0, op_shl, 4 },
+	{ "SHR", ADDR_REG_0, op_shr, 4 }, { "ROL", ADDR_REG_0, op_rol, 4 }, { "ROR", ADDR_REG_0, op_ror, 4 },
+	{ "CMP", ADDR_REG_0, op_cmp, 4 }, { "MUL", ADDR_REG_0, op_mul, 3 }, { "MLS", ADDR_REG_0, op_mls, 6 },
+	{ "DIV", ADDR_REG_0, op_div, 6 }, { "DVS", ADDR_REG_0, op_dvs, 6 }, { "???", ADDR_REG_1, op_xxx, 2 },
+	{ "???", ADDR_REG_1, op_xxx, 2 }, { "INC", ADDR_REG_1, op_inc, 2 }, { "DEC", ADDR_REG_1, op_dec, 2 },
+	{ "NOT", ADDR_REG_1, op_not, 2 }, { "???", ADDR_REG_1, op_xxx, 2 }, { "???", ADDR_REG_1, op_xxx, 2 },
+	{ "POP", ADDR_REG_1, op_pop, 3 }, { "PSH", ADDR_REG_1, op_psh, 3 }, { "???", ADDR_REG_1, op_xxx, 2 },
+	{ "???", ADDR_REG_1, op_xxx, 2 }, { "???", ADDR_REG_1, op_xxx, 2 }, { "???", ADDR_REG_1, op_xxx, 2 },
+	{ "???", ADDR_REG_1, op_xxx, 2 }, { "???", ADDR_REG_1, op_xxx, 2 }, { "???", ADDR_REG_1, op_xxx, 2 },
+	{ "MOV", ADDR_IMM_0, op_mov, 4 }, { "AND", ADDR_IMM_0, op_and, 4 }, { "IOR", ADDR_IMM_0, op_ior, 4 },
+	{ "XOR", ADDR_IMM_0, op_xor, 4 }, { "TST", ADDR_IMM_0, op_tst, 4 }, { "ADD", ADDR_IMM_0, op_add, 5 },
+	{ "SUB", ADDR_IMM_0, op_sub, 5 }, { "SHL", ADDR_IMM_0, op_shl, 5 }, { "SHR", ADDR_IMM_0, op_shr, 5 },
+	{ "ROL", ADDR_IMM_0, op_rol, 5 }, { "ROR", ADDR_IMM_0, op_ror, 5 }, { "CMP", ADDR_IMM_0, op_cmp, 5 },
+	{ "MUL", ADDR_IMM_0, op_mul, 7 }, { "MLS", ADDR_IMM_0, op_mls, 7 }, { "DIV", ADDR_IMM_0, op_div, 7 },
+	{ "DVS", ADDR_IMM_0, op_dvs, 7 }, { "???", ADDR_IMM_1, op_xxx, 3 }, { "???", ADDR_IMM_1, op_xxx, 3 },
+	{ "???", ADDR_IMM_1, op_xxx, 3 }, { "???", ADDR_IMM_1, op_xxx, 3 }, { "???", ADDR_IMM_1, op_xxx, 3 },
+	{ "CLR", ADDR_IMM_1, op_clr, 3 }, { "SET", ADDR_IMM_1, op_set, 3 }, { "???", ADDR_IMM_1, op_xxx, 3 },
+	{ "PSH", ADDR_IMM_1, op_psh, 4 }, { "???", ADDR_IMM_1, op_xxx, 3 }, { "???", ADDR_IMM_1, op_xxx, 3 },
+	{ "???", ADDR_IMM_1, op_xxx, 3 }, { "???", ADDR_IMM_1, op_xxx, 3 }, { "???", ADDR_IMM_1, op_xxx, 3 },
+	{ "???", ADDR_IMM_1, op_xxx, 3 }, { "???", ADDR_IMM_1, op_xxx, 3 }, { "MOV", ADDR_IND_0, op_mov, 4 },
+	{ "AND", ADDR_IND_0, op_and, 4 }, { "IOR", ADDR_IND_0, op_ior, 4 }, { "XOR", ADDR_IND_0, op_xor, 4 },
+	{ "TST", ADDR_IND_0, op_tst, 4 }, { "ADD", ADDR_IND_0, op_add, 5 }, { "SUB", ADDR_IND_0, op_sub, 5 },
+	{ "SHL", ADDR_IND_0, op_shl, 5 }, { "SHR", ADDR_IND_0, op_shr, 5 }, { "ROL", ADDR_IND_0, op_rol, 5 },
+	{ "ROR", ADDR_IND_0, op_ror, 5 }, { "CMP", ADDR_IND_0, op_cmp, 5 }, { "MUL", ADDR_IND_0, op_mul, 7 },
+	{ "MLS", ADDR_IND_0, op_mls, 7 }, { "DIV", ADDR_IND_0, op_div, 7 }, { "DVS", ADDR_IND_0, op_dvs, 7 },
+	{ "???", ADDR_ABS_0, op_xxx, 4 }, { "???", ADDR_ABS_0, op_xxx, 4 }, { "INC", ADDR_ABS_0, op_inc, 4 },
+	{ "DEC", ADDR_ABS_0, op_dec, 4 }, { "NOT", ADDR_ABS_0, op_not, 4 }, { "???", ADDR_ABS_0, op_xxx, 4 },
+	{ "???", ADDR_ABS_0, op_xxx, 4 }, { "POP", ADDR_ABS_0, op_pop, 5 }, { "PSH", ADDR_ABS_0, op_psh, 5 },
+	{ "???", ADDR_ABS_0, op_xxx, 4 }, { "???", ADDR_ABS_0, op_xxx, 4 }, { "???", ADDR_ABS_0, op_xxx, 4 },
+	{ "JMP", ADDR_ABS_0, op_jmp, 5 }, { "JSR", ADDR_ABS_0, op_jsr, 6 }, { "???", ADDR_ABS_0, op_xxx, 4 },
+	{ "???", ADDR_ABS_0, op_xxx, 4 }, { "MOV", ADDR_IND_1, op_mov, 4 }, { "AND", ADDR_IND_1, op_and, 4 },
+	{ "IOR", ADDR_IND_1, op_ior, 4 }, { "XOR", ADDR_IND_1, op_xor, 4 }, { "TST", ADDR_IND_1, op_tst, 4 },
+	{ "ADD", ADDR_IND_1, op_add, 5 }, { "SUB", ADDR_IND_1, op_sub, 5 }, { "SHL", ADDR_IND_1, op_shl, 5 },
+	{ "SHR", ADDR_IND_1, op_shr, 5 }, { "ROL", ADDR_IND_1, op_rol, 5 }, { "ROR", ADDR_IND_1, op_ror, 5 },
+	{ "CMP", ADDR_IND_1, op_cmp, 5 }, { "MUL", ADDR_IND_1, op_mul, 7 }, { "MLS", ADDR_IND_1, op_mls, 7 },
+	{ "DIV", ADDR_IND_1, op_div, 7 }, { "DVS", ADDR_IND_1, op_dvs, 7 }, { "???", ADDR_IND_2, op_xxx, 4 },
+	{ "???", ADDR_IND_2, op_xxx, 4 }, { "INC", ADDR_IND_2, op_inc, 4 }, { "DEC", ADDR_IND_2, op_dec, 4 },
+	{ "NOT", ADDR_IND_2, op_not, 4 }, { "???", ADDR_IND_2, op_xxx, 4 }, { "???", ADDR_IND_2, op_xxx, 4 },
+	{ "POP", ADDR_IND_2, op_pop, 5 }, { "PSH", ADDR_IND_2, op_psh, 5 }, { "???", ADDR_IND_2, op_xxx, 4 },
+	{ "???", ADDR_IND_2, op_xxx, 4 }, { "???", ADDR_IND_2, op_xxx, 4 }, { "JMP", ADDR_IND_2, op_jmp, 5 },
+	{ "JSR", ADDR_IND_2, op_jsr, 5 }, { "???", ADDR_IND_2, op_xxx, 4 }, { "???", ADDR_IND_2, op_xxx, 4 },
+	{ "MOV", ADDR_IND_3, op_mov, 5 }, { "AND", ADDR_IND_3, op_and, 5 }, { "IOR", ADDR_IND_3, op_ior, 5 },
+	{ "XOR", ADDR_IND_3, op_xor, 5 }, { "TST", ADDR_IND_3, op_tst, 5 }, { "ADD", ADDR_IND_3, op_add, 6 },
+	{ "SUB", ADDR_IND_3, op_sub, 6 }, { "SHL", ADDR_IND_3, op_shl, 6 }, { "SHR", ADDR_IND_3, op_shr, 6 },
+	{ "ROL", ADDR_IND_3, op_rol, 6 }, { "ROR", ADDR_IND_3, op_ror, 6 }, { "CMP", ADDR_IND_3, op_cmp, 6 },
+	{ "MUL", ADDR_IND_3, op_mul, 8 }, { "MLS", ADDR_IND_3, op_mls, 8 }, { "DIV", ADDR_IND_3, op_div, 8 },
+	{ "DVS", ADDR_IND_3, op_dvs, 8 }, { "???", ADDR_REL_0, op_xxx, 3 }, { "???", ADDR_REL_0, op_xxx, 3 },
+	{ "???", ADDR_REL_0, op_xxx, 3 }, { "???", ADDR_REL_0, op_xxx, 3 }, { "???", ADDR_REL_0, op_xxx, 3 },
+	{ "???", ADDR_REL_0, op_xxx, 3 }, { "???", ADDR_REL_0, op_xxx, 3 }, { "???", ADDR_REL_0, op_xxx, 3 },
+	{ "???", ADDR_REL_0, op_xxx, 3 }, { "???", ADDR_REL_0, op_xxx, 3 }, { "???", ADDR_REL_0, op_xxx, 3 },
+	{ "BRA", ADDR_REL_0, op_bra, 4 }, { "???", ADDR_REL_0, op_xxx, 3 }, { "???", ADDR_REL_0, op_xxx, 3 },
+	{ "???", ADDR_REL_0, op_xxx, 3 }, { "???", ADDR_REL_0, op_xxx, 3 }, { "MOV", ADDR_ABS_1, op_mov, 5 },
+	{ "AND", ADDR_ABS_1, op_and, 5 }, { "IOR", ADDR_ABS_1, op_ior, 5 }, { "XOR", ADDR_ABS_1, op_xor, 5 },
+	{ "TST", ADDR_ABS_1, op_tst, 5 }, { "ADD", ADDR_ABS_1, op_add, 6 }, { "SUB", ADDR_ABS_1, op_sub, 6 },
+	{ "SHL", ADDR_ABS_1, op_shl, 6 }, { "SHR", ADDR_ABS_1, op_shr, 6 }, { "ROL", ADDR_ABS_1, op_rol, 6 },
+	{ "ROR", ADDR_ABS_1, op_ror, 6 }, { "CMP", ADDR_ABS_1, op_cmp, 6 }, { "MUL", ADDR_ABS_1, op_mul, 8 },
+	{ "MLS", ADDR_ABS_1, op_mls, 8 }, { "DIV", ADDR_ABS_1, op_div, 8 }, { "DVS", ADDR_ABS_1, op_dvs, 8 },
+	{ "???", ADDR_REL_1, op_xxx, 5 }, { "???", ADDR_REL_1, op_xxx, 5 }, { "???", ADDR_REL_1, op_xxx, 5 },
+	{ "???", ADDR_REL_1, op_xxx, 5 }, { "???", ADDR_REL_1, op_xxx, 5 }, { "???", ADDR_REL_1, op_xxx, 5 },
+	{ "???", ADDR_REL_1, op_xxx, 5 }, { "???", ADDR_REL_1, op_xxx, 5 }, { "???", ADDR_REL_1, op_xxx, 5 },
+	{ "BIF", ADDR_REL_1, op_bif, 6 }, { "BNF", ADDR_REL_1, op_bnf, 6 }, { "???", ADDR_REL_1, op_xxx, 5 },
+	{ "???", ADDR_REL_1, op_xxx, 5 }, { "???", ADDR_REL_1, op_xxx, 5 }, { "???", ADDR_REL_1, op_xxx, 5 },
+	{ "???", ADDR_REL_1, op_xxx, 5 }, { "MOV", ADDR_ABS_2, op_mov, 5 }, { "AND", ADDR_ABS_2, op_and, 5 },
+	{ "IOR", ADDR_ABS_2, op_ior, 5 }, { "XOR", ADDR_ABS_2, op_xor, 5 }, { "TST", ADDR_ABS_2, op_tst, 5 },
+	{ "ADD", ADDR_ABS_2, op_add, 6 }, { "SUB", ADDR_ABS_2, op_sub, 6 }, { "SHL", ADDR_ABS_2, op_shl, 6 },
+	{ "SHR", ADDR_ABS_2, op_shr, 6 }, { "ROL", ADDR_ABS_2, op_rol, 6 }, { "ROR", ADDR_ABS_2, op_ror, 6 },
+	{ "CMP", ADDR_ABS_2, op_cmp, 6 }, { "MUL", ADDR_ABS_2, op_mul, 8 }, { "MLS", ADDR_ABS_2, op_mls, 8 },
+	{ "DIV", ADDR_ABS_2, op_div, 8 }, { "DVS", ADDR_ABS_2, op_dvs, 8 }, { "NOP", ADDR_IMP_1, op_nop, 1 },
+	{ "HLT", ADDR_IMP_1, op_hlt, 1 }, { "???", ADDR_IMP_1, op_xxx, 1 }, { "???", ADDR_IMP_1, op_xxx, 1 },
+	{ "???", ADDR_IMP_1, op_xxx, 1 }, { "???", ADDR_IMP_1, op_xxx, 1 }, { "???", ADDR_IMP_1, op_xxx, 1 },
+	{ "???", ADDR_IMP_1, op_xxx, 1 }, { "???", ADDR_IMP_1, op_xxx, 1 }, { "???", ADDR_IMP_1, op_xxx, 1 },
+	{ "???", ADDR_IMP_1, op_xxx, 1 }, { "???", ADDR_IMP_1, op_xxx, 1 }, { "???", ADDR_IMP_1, op_xxx, 1 },
+	{ "???", ADDR_IMP_1, op_xxx, 1 }, { "RET", ADDR_IMP_1, op_ret, 4 }, { "RTI", ADDR_IMP_1, op_rti, 4 },
+	{ "MOV", ADDR_ABS_3, op_mov, 6 }, { "AND", ADDR_ABS_3, op_and, 6 }, { "IOR", ADDR_ABS_3, op_ior, 6 },
+	{ "XOR", ADDR_ABS_3, op_xor, 6 }, { "TST", ADDR_ABS_3, op_tst, 6 }, { "ADD", ADDR_ABS_3, op_add, 7 },
+	{ "SUB", ADDR_ABS_3, op_sub, 7 }, { "SHL", ADDR_ABS_3, op_shl, 7 }, { "SHR", ADDR_ABS_3, op_shr, 7 },
+	{ "ROL", ADDR_ABS_3, op_rol, 7 }, { "ROR", ADDR_ABS_3, op_ror, 7 }, { "CMP", ADDR_ABS_3, op_cmp, 7 },
+	{ "MUL", ADDR_ABS_3, op_mul, 9 }, { "MLS", ADDR_ABS_3, op_mls, 9 }, { "DIV", ADDR_ABS_3, op_div, 9 },
+	{ "DVS", ADDR_ABS_3, op_dvs, 9 },
+};
+
+int opcode_execute(Cpu *cpu, u16 opcode) {
+	Opcode current = op_table[opcode & 0x00ff];
+	if (current.handler == NULL) {
+		log_fatal("Opcode '%#x' doesn't have a handler!", opcode);
+		exit(EXIT_FAILURE);
+	}
+
+	/* TODO: Get addressing mode operands */
+	/* TODO: Execute instruction handler */
+
+	cpu->cycles += current.cycles;
+	return 0;
+}

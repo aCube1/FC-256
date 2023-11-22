@@ -1,5 +1,5 @@
-#ifndef _EMU_Cpu_H_
-#define _EMU_Cpu_H_
+#ifndef _EMU_CPU_H_
+#define _EMU_CPU_H_
 
 #include "types.h"
 
@@ -18,6 +18,14 @@ enum SystemVectors {
 	VEC_STACK = 0xfc,   /* 0xfc-ff: Stack Address */
 };
 
+enum ProgramStatus {
+	ST_CARRY = 1 << 0,
+	ST_ZERO = 1 << 1,
+	ST_INTERRUPT = 1 << 2,
+	ST_OVERFLOW = 1 << 14,
+	ST_SIGN = 1 << 15,
+};
+
 enum Registers {
 	REG_0,
 	REG_1,
@@ -33,8 +41,8 @@ enum Registers {
 	REG_D,
 	REG_E,
 	REG_F,
-	REG_LSP,
-	REG_HSP,
+	REG_LSP, /* rX */
+	REG_HSP, /* rY */
 	REG_COUNT,
 };
 
@@ -42,7 +50,7 @@ typedef struct Cpu {
 	u8 *ram;
 	u16 regs[REG_COUNT];
 
-	u16 status;
+	u16 status; /* SO------ -----IZC */
 	u32 program_counter;
 	u32 stack_pointer;
 
@@ -61,4 +69,4 @@ u32 ram_read32(Cpu *cpu, u32 addr);
 
 void ram_write16(Cpu *cpu, u32 addr, u16 data);
 
-#endif /* _EMU_Cpu_H_ */
+#endif /* _EMU_CPU_H_ */

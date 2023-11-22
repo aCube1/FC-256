@@ -8,7 +8,7 @@
 static void set_stackpointer(Cpu *cpu, u32 pointer) {
 
 	cpu->stack_pointer = pointer;
-	cpu->regs[REG_LSP] = pointer & 0xffff;
+	cpu->regs[REG_LSP] = pointer & 0x0000ffff;
 	cpu->regs[REG_HSP] = pointer >> 16;
 }
 
@@ -46,7 +46,7 @@ void cpu_clock(Cpu *cpu) {
 
 u16 ram_read16(Cpu *cpu, u32 addr) {
 	if (addr < 0 || addr > RAM_SIZE) {
-		log_error("Attempt to read address %#x is out of bounds!", addr);
+		log_fatal("Attempt to read address %#x is out of bounds!", addr);
 		exit(EXIT_FAILURE);
 	}
 
@@ -67,7 +67,7 @@ u32 ram_read32(Cpu *cpu, u32 addr) {
 
 void ram_write16(Cpu *cpu, u32 addr, u16 data) {
 	if (addr < 0 || addr > RAM_SIZE) {
-		log_error("Attempt to write on address %#x is out of bounds!", addr);
+		log_fatal("Attempt to write on address %#x is out of bounds!", addr);
 		exit(EXIT_FAILURE);
 	}
 
