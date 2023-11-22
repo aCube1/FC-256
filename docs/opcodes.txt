@@ -60,28 +60,6 @@ Opcode | Addr Mode | Operand         | Cycles
  0xc9  | Relative  | (Offset), Const |   6
 
 
-==== BIT - Bit Test ====
-- Test one or more bits at D2 location. The D1 bits are used as mask pattern
-and is ANDed with D2, the result is not kept.
-
-== Status Register ==
-Carry Flag       | Not affected
-Zero Flag        | Set if the result is Zero
-Ignore Interrupt | Not affected
-Overflow Flag    | Set to 14th bit of D2
-Sign Flag        | Set to 15th bit of D2
-
-== Encoding ==
-Opcode | Addr Mode | Operand          | Cycles
- 0x14  | Register  | r1, r2           |   3
- 0x34  | Immediate | r1, Const        |   4
- 0x54  | Indexed   | [Bank:r1], r2    |   4
- 0x74  | Indexed   | r1, [Bank:r2]    |   4
- 0x94  | Indexed   | [Bank:r1], Const |   5
- 0xb4  | Absolute  | [Addr], r1       |   5
- 0xd4  | Absolute  | r1, [Addr]       |   5
- 0xf4  | Absolute  | [Addr], Const    |   6
-
 
 ==== BNF - Branch if Not Flags ====
 - Perform a AND operation with the ST register using D1 contents, if the result
@@ -111,7 +89,7 @@ Sign Flag        | Not affected
 
 == Encoding ==
 Opcode | Addr Mode | Operand  | Cycles
- 0xcb  | Relative  | (Offset) |   4
+ 0xab  | Relative  | (Offset) |   4
 
 
 ==== CLR - Clear Flags ====
@@ -359,14 +337,14 @@ Sign Flag        | Set if the Low Word is Negative
 
 == Encoding ==
 Opcode | Addr Mode | Operand          | Cycles
- 0x1d  | Register  | r1, r2           |   6
- 0x3d  | Immediate | r1, Const        |   7
- 0x5d  | Indexed   | [Bank:r1], r2    |   7
- 0x7d  | Indexed   | r1, [Bank:r2]    |   7
- 0x9d  | Indexed   | [Bank:r1], Const |   8
- 0xbd  | Absolute  | [Addr], r1       |   8
- 0xdd  | Absolute  | r1, [Addr]       |   8
- 0xfd  | Absolute  | [Addr], Const    |   9
+ 0x1c  | Register  | r1, r2           |   6
+ 0x3c  | Immediate | r1, Const        |   7
+ 0x5c  | Indexed   | [Bank:r1], r2    |   7
+ 0x7c  | Indexed   | r1, [Bank:r2]    |   7
+ 0x9c  | Indexed   | [Bank:r1], Const |   8
+ 0xbc  | Absolute  | [Addr], r1       |   8
+ 0xdc  | Absolute  | r1, [Addr]       |   8
+ 0xfc  | Absolute  | [Addr], Const    |   9
 
 
 ==== NOP - No Operation ====
@@ -565,14 +543,14 @@ Sign Flag        | Set if result is Negative
 
 == Encoding ==
 Opcode | Addr Mode | Operand          | Cycles
- 0x17  | Register  | r1, r2           |   4
- 0x37  | Immediate | r1, Const        |   5
- 0x57  | Indexed   | [Bank:r1], r2    |   5
- 0x77  | Indexed   | r1, [Bank:r2]    |   5
- 0x97  | Indexed   | [Bank:r1], Const |   6
- 0xb7  | Absolute  | [Addr], r1       |   6
- 0xd7  | Absolute  | r1, [Addr]       |   6
- 0xf7  | Absolute  | [Addr], Const    |   7
+ 0x18  | Register  | r1, r2           |   4
+ 0x38  | Immediate | r1, Const        |   5
+ 0x58  | Indexed   | [Bank:r1], r2    |   5
+ 0x78  | Indexed   | r1, [Bank:r2]    |   5
+ 0x98  | Indexed   | [Bank:r1], Const |   6
+ 0xb8  | Absolute  | [Addr], r1       |   6
+ 0xd8  | Absolute  | r1, [Addr]       |   6
+ 0xf8  | Absolute  | [Addr], Const    |   7
 
 
 ==== SUB - Subtract with Carry ====
@@ -596,6 +574,30 @@ Opcode | Addr Mode | Operand          | Cycles
  0xb6  | Absolute  | [Addr], r1       |   6
  0xd6  | Absolute  | r1, [Addr]       |   6
  0xf6  | Absolute  | [Addr], Const    |   7
+
+
+==== TST - Test Bits ====
+- Test one or more bits at D2 location. The D1 bits are used as mask pattern
+and is ANDed with D2, the result is not kept.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if the result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Set to 14th bit of D2
+Sign Flag        | Set to 15th bit of D2
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x14  | Register  | r1, r2           |   3
+ 0x34  | Immediate | r1, Const        |   4
+ 0x54  | Indexed   | [Bank:r1], r2    |   4
+ 0x74  | Indexed   | r1, [Bank:r2]    |   4
+ 0x94  | Indexed   | [Bank:r1], Const |   5
+ 0xb4  | Absolute  | [Addr], r1       |   5
+ 0xd4  | Absolute  | r1, [Addr]       |   5
+ 0xf4  | Absolute  | [Addr], Const    |   6
+
 
 
 ==== XOR - Logical Exclusive OR ====
