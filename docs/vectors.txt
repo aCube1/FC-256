@@ -58,9 +58,10 @@ into the Stack and the Flag I is set to prevent more Requests.
 
 
 ==== 0xf8-fb: Reset ====
-- Triggered when the CPU hard/soft reset or startup.
-- When triggered, just set the Program Counter to the Vector
-Address.
+- Triggered when the CPU hard/soft reset.
+- When triggered, set the Program Counter, read and store Stack Address at the
+Stack Pointer register, clears Program Status and set Ignore Interrupts flag.
+- Takes 6 cycles to complete.
 
 
 ==== 0xfc-ff: Stack Address  ====
