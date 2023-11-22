@@ -1,70 +1,64 @@
-#ifndef _EMU_CPU_H_
-#define _EMU_CPU_H_
+#ifndef _EMU_Cpu_H_
+#define _EMU_Cpu_H_
 
-#include "emu/operand.h"
 #include "types.h"
 
-/* NOTE: RAM Size has 16MiB of addressable memory. */
-#define RAM_SIZE (0x1000000u)
+/* NOTE: RAM has 16MiB of addrassable memory. */
+#define RAM_SIZE    16777216u
 
-/* clang-format off */
-enum Registers {
-	REG_A, REG_B, REG_C,
-	REG_PC, /* Program Counter */
-	REG_X, REG_Y, REG_Z,
-	REG_SP, /* Stack Pointer*/
-
-	REGS_COUNT,
-};
-
-/* clang-format on */
+#define VECTOR_ADDR 0xffff00u
 
 enum SystemVectors {
-	VEC_RESET = 0x400000,
-	VEC_IRQ = 0x400003,
-	VEC_NMI = 0x400006,
-	VEC_DIVZERO = 0x400009,
+	VEC_ADDRESS = 0xe4, /* 0xe4-e7: Illegal Address */
+	VEC_ILLEGAL = 0xe8, /* 0xe8-eb: Illegal Instruction */
+	VEC_DIVZERO = 0xec, /* 0xec-ef: Division by Zero */
+	VEC_NMI = 0xf0,     /* 0xf0-f3: Hardware NMI */
+	VEC_IRQ = 0xf4,     /* 0xf4-f7: Hardware IRQ */
+	VEC_RESET = 0xf8,   /* 0xf8-fb: Reset */
+	VEC_STACK = 0xfc,   /* 0xfc-ff: Stack Address */
 };
 
-enum StatusBitPosition {
-	STATUS_ZERO = 0,  /* 0000-000x -> Zero */
-	STATUS_NEGATIVE,  /* 0000-00x0 -> Negative */
-	STATUS_CARRY,     /* 0000-0x00 -> Carry */
-	STATUS_OVERFLOW,  /* 0000-x000 -> Overflow/Underflow */
-	STATUS_INTERRUPT, /* 000x-0000 -> Disable interrupt */
+enum Registers {
+	REG_0,
+	REG_1,
+	REG_2,
+	REG_3,
+	REG_4,
+	REG_5,
+	REG_6,
+	REG_7,
+	REG_A,
+	REG_B,
+	REG_C,
+	REG_D,
+	REG_E,
+	REG_F,
+	REG_LSP,
+	REG_HSP,
+	REG_COUNT,
 };
 
-typedef struct CPU {
-	u8 *memory;
+typedef struct Cpu {
+	u8 *ram;
+	u16 regs[REG_COUNT];
 
-	u8 status;            /* Status register */
-	u16 regs[REGS_COUNT]; /* General Registers */
-	u32 actual_pc;        /* PB + program counter */
+	u16 status;
+	u32 program_counter;
+	u32 stack_pointer;
 
-	/* NOTE: Data Bank is not used in this emulator, but will stay here as a reference. */
-	// u8 data_bank; /* Data Bank(DB) */
+	/* Internal Private Data */
+	u16 cycles; /* Remaining cycles */
+} Cpu;
 
-	/* Internal private data */
-	u16 cycles;
+void cpu_powerup(Cpu *cpu);
+void cpu_shutdown(Cpu *cpu);
 
-	Operand dest;
-	Operand src;
+void cpu_reset(Cpu *cpu);
+void cpu_clock(Cpu *cpu);
 
-	u16 opcode;
-} CPU;
+u16 ram_read16(Cpu *cpu, u32 addr);
+u32 ram_read32(Cpu *cpu, u32 addr);
 
-void cpuPowerUp(CPU *cpu);
-void cpuShutdown(CPU *cpu);
+void ram_write16(Cpu *cpu, u32 addr, u16 data);
 
-void cpuReset(CPU *cpu);
-void cpuClock(CPU *cpu);
-
-u8 cpuMemRead(CPU *cpu, u32 addr);
-u16 cpuMemRead16(CPU *cpu, u32 addr);
-u32 cpuMemRead24(CPU *cpu, u32 addr);
-
-void cpuMemWrite(CPU *cpu, u32 addr, u8 data);
-void cpuMemWrite16(CPU *cpu, u32 addr, u16 data);
-void cpuMemWrite24(CPU *cpu, u32 addr, u32 data);
-
-#endif /* _EMU_CPU_H_ */
+#endif /* _EMU_Cpu_H_ */

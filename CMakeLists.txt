@@ -16,22 +16,15 @@ target_compile_features(
 target_sources(
 	${PROJECT_NAME}
 	PRIVATE
-		src/emu/opcode.c
-		src/emu/operand.c
-		src/emu/cpu.c
-		src/log/log.c
-		src/common.c
-		src/main.c
-
-)
-
-target_precompile_headers(
-	${PROJECT_NAME}
-	PRIVATE
-		include/emu/operand.h
+		include/emu/cpu.h
 		include/log/log.h
 		include/common.h
 		include/types.h
+
+		src/log/log.c
+		src/emu/cpu.c
+		src/common.c
+		src/main.c
 )
 
 target_include_directories(
