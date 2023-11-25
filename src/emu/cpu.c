@@ -50,7 +50,7 @@ u16 ram_read16(Cpu *cpu, u32 addr) {
 		exit(EXIT_FAILURE);
 	}
 
-	return (cpu->ram[addr + 1] << 8) | cpu->ram[addr];
+	return (cpu->ram[addr] << 8) | cpu->ram[addr + 1];
 }
 
 u32 ram_read32(Cpu *cpu, u32 addr) {

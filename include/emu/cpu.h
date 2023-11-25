@@ -55,7 +55,14 @@ typedef struct Cpu {
 	u32 stack_pointer;
 
 	/* Internal Private Data */
+	struct Operands {
+		u16 src;
+		u32 dest;
+		bool is_addr; /* true if the destination is an Address. */
+	} operand;
+
 	u16 cycles; /* Remaining cycles */
+	u16 current_opcode;
 } Cpu;
 
 void cpu_powerup(Cpu *cpu);

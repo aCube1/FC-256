@@ -6,36 +6,41 @@
 
 #define OPCODE_COUNT (UINT8_MAX + 1)
 
-enum AddressingMode {
-	ADDR_IMP_0 = 0x0, /* Implied   - Nothing */
-	ADDR_REG_1 = 0x2, /* Register  - r1 */
-	ADDR_IMM_1 = 0x4, /* Immediate - Const */
-	ADDR_ABS_0 = 0x6, /* Absolute  - [Addr] */
-	ADDR_IND_2 = 0x8, /* Indexed   - [Bank:r1] */
-	ADDR_REL_0 = 0xa, /* Relative  - (Offset) */
-	ADDR_REL_1 = 0xc, /* Relative  - (Offset), Const */
-	ADDR_IMP_1 = 0xe, /* Implied   - Nothing */
-
-	ADDR_REG_0 = 0x1, /* Register  - r1, r2 */
-	ADDR_IMM_0 = 0x3, /* Immediate - r1, Const */
-	ADDR_IND_0 = 0x5, /* Indexed   - [Bank:r1], r2 */
-	ADDR_IND_1 = 0x7, /* Indexed   - r1, [Bank:r2] */
-	ADDR_IND_3 = 0x9, /* Indexed   - [Bank:r1], Const */
-	ADDR_ABS_1 = 0xb, /* Absolute  - [Addr], r1 */
-	ADDR_ABS_2 = 0xd, /* Absolute  - r1, [Addr] */
-	ADDR_ABS_3 = 0xf, /* Absolute  - [Addr], Const */
-};
-
 typedef struct Opcode {
 	const char name[4];
-	enum AddressingMode addressing;
 	void (*handler)(Cpu *);
+	void (*addr)(Cpu *, u8);
+	u8 addr_mode; /* 0 -> 3 */
 	u8 cycles;
 } Opcode;
 
 extern const Opcode op_table[OPCODE_COUNT];
 
-int opcode_execute(Cpu *cpu, u16 opcode);
+int opcode_execute(Cpu *cpu);
+
+/* Register  - 0 - r1, r2
+ * Register  - 1 - r1 */
+void addr_reg(Cpu *cpu, u8 mode);
+
+/* Immediate - 0 - r1, Const
+ * Immediate - 1 - Const */
+void addr_imm(Cpu *cpu, u8 mode);
+
+/* Indexed - 0 - [Bank:r1], r2
+ * Indexed - 1 - r1, [Bank:r2]
+ * Indexed - 2 - [Bank:r1]
+ * Indexed - 3 - [Bank:r1], Const */
+void addr_ind(Cpu *cpu, u8 mode);
+
+/* Relative - 0 - (Offset)
+ * Relative - 1 - (Offset), Const */
+void addr_rel(Cpu *cpu, u8 mode);
+
+/* Absolute - 0 - [Addr]
+ * Absolute - 1 - [Addr], r1
+ * Absolute - 2 - r1, [Addr]
+ * Absolute - 3 - [Addr], Const */
+void addr_abs(Cpu *cpu, u8 mode);
 
 /* clang-format off */
 void op_add(Cpu *cpu); void op_and(Cpu *cpu); void op_bif(Cpu *cpu); void op_bnf(Cpu *cpu);
