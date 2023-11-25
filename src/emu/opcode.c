@@ -91,7 +91,7 @@ const Opcode op_table[OPCODE_COUNT] = {
 	{ "DVS", op_dvs, addr_abs, 3, 9 },
 };
 
-int opcode_execute(Cpu *cpu) {
+void opcode_execute(Cpu *cpu) {
 	Opcode current = op_table[cpu->current_opcode & 0x00ff];
 	if (current.handler == NULL) {
 		log_fatal("Opcode '%#x' doesn't have a handler!", cpu->current_opcode);
@@ -103,7 +103,6 @@ int opcode_execute(Cpu *cpu) {
 	/* TODO: Execute instruction handler */
 
 	cpu->cycles += current.cycles;
-	return 0;
 }
 
 void addr_reg(Cpu *cpu, u8 mode) {

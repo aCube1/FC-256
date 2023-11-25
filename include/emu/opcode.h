@@ -16,7 +16,7 @@ typedef struct Opcode {
 
 extern const Opcode op_table[OPCODE_COUNT];
 
-int opcode_execute(Cpu *cpu);
+void opcode_execute(Cpu *cpu);
 
 /* Register  - 0 - r1, r2
  * Register  - 1 - r1 */

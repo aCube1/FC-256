@@ -1,6 +1,7 @@
 #include "emu/cpu.h"
 
 #include "common.h"
+#include "emu/opcode.h"
 #include "log/log.h"
 
 #include <string.h>
@@ -35,13 +36,20 @@ void cpu_reset(Cpu *cpu) {
 	cpu->cycles = 6; /* Reset takes 6 cycles to complete */
 }
 
+void cpu_step(Cpu *cpu) {
+	cpu->current_opcode = ram_read16(cpu, cpu->program_counter);
+	cpu->program_counter += 2;
+
+	opcode_execute(cpu);
+}
+
 void cpu_clock(Cpu *cpu) {
 	if (cpu->cycles != 0) {
 		cpu->cycles -= 1;
 		return;
 	}
 
-	/* TODO: Handle instruction */
+	cpu_step(cpu);
 }
 
 u16 ram_read16(Cpu *cpu, u32 addr) {
@@ -50,7 +58,7 @@ u16 ram_read16(Cpu *cpu, u32 addr) {
 		exit(EXIT_FAILURE);
 	}
 
-	return (cpu->ram[addr] << 8) | cpu->ram[addr + 1];
+	return cpu->ram[addr] | (cpu->ram[addr + 1] << 8);
 }
 
 u32 ram_read32(Cpu *cpu, u32 addr) {
@@ -71,6 +79,6 @@ void ram_write16(Cpu *cpu, u32 addr, u16 data) {
 		exit(EXIT_FAILURE);
 	}
 
-	cpu->ram[addr] = data >> 8;       /* Write high byte */
-	cpu->ram[addr + 1] = data & 0xff; /* Write low byte */
+	cpu->ram[addr] = data & 0xff;   /* Write low byte */
+	cpu->ram[addr + 1] = data >> 8; /* Write high byte */
 }

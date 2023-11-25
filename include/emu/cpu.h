@@ -69,6 +69,7 @@ void cpu_powerup(Cpu *cpu);
 void cpu_shutdown(Cpu *cpu);
 
 void cpu_reset(Cpu *cpu);
+void cpu_step(Cpu *cpu);
 void cpu_clock(Cpu *cpu);
 
 u16 ram_read16(Cpu *cpu, u32 addr);
