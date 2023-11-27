@@ -46,7 +46,7 @@ Opcode | Addr Mode | Operand          | Cycles
 
 ==== BIF - Branch If Flags ====
 - Perform a AND operation with the ST register using D1 contents, if the result
-is not Zero, branch to the desired Offset. Result of AND is discarded.
+is equal to D1, branch to the desired Offset. Result of AND is discarded.
 
 == Status Register ==
 Carry Flag       | Not affected
@@ -58,7 +58,6 @@ Sign Flag        | Not affected
 == Encoding ==
 Opcode | Addr Mode | Operand         | Cycles
  0xc9  | Relative  | (Offset), Const |   6
-
 
 
 ==== BNF - Branch if Not Flags ====

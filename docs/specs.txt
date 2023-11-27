@@ -29,7 +29,7 @@ Encoding: RRRRRRRR-AAAGIIII
 0b0110 |   SET    | ST |= D1                       | SOIZC |   1
 0b0111 |   POP    | D1 = StackTop; SP -= 2         | S--Z- |   2
 0b1000 |   PSH    | SP += 2; StackTop = D1         | S--Z- |   2
-0b1001 |   BIF    | PC += O if ST & D1             | ----- |   2
+0b1001 |   BIF    | PC += O if (ST & D1) == D1     | ----- |   2
 0b1010 |   BNF    | PC += O if not (ST & D1)       | ----- |   2
 0b1011 |   BRA    | PC += O                        | ----- |   2
 0b1100 |   JMP    | PC = A                         | ----- |   2
