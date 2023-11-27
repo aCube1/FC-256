@@ -17,12 +17,14 @@ target_sources(
 	${PROJECT_NAME}
 	PRIVATE
 		include/emu/cpu.h
+		include/emu/opcode.h
 		include/log/log.h
 		include/common.h
 		include/types.h
 
-		src/log/log.c
 		src/emu/cpu.c
+		src/emu/opcode.c
+		src/log/log.c
 		src/common.c
 		src/main.c
 )

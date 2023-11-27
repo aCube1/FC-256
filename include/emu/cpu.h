@@ -19,11 +19,11 @@ enum SystemVectors {
 };
 
 enum ProgramStatus {
-	ST_CARRY = 1 << 0,
-	ST_ZERO = 1 << 1,
-	ST_INTERRUPT = 1 << 2,
-	ST_OVERFLOW = 1 << 14,
-	ST_SIGN = 1 << 15,
+	ST_CARRY = 0,
+	ST_ZERO = 1,
+	ST_INTERRUPT = 2,
+	ST_OVERFLOW = 14,
+	ST_SIGN = 15,
 };
 
 enum Registers {
@@ -56,9 +56,10 @@ typedef struct Cpu {
 
 	/* Internal Private Data */
 	struct Operands {
+		s16 offset; /* Only used by Relative address modes */
 		u16 src;
 		u32 dest;
-		bool is_addr; /* true if the destination is an Address. */
+		bool is_addr;
 	} operand;
 
 	u16 cycles; /* Remaining cycles */

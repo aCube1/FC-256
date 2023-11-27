@@ -1,5 +1,6 @@
 #include "emu/opcode.h"
 
+#include "common.h"
 #include "log/log.h"
 
 const Opcode op_table[OPCODE_COUNT] = {
@@ -91,6 +92,36 @@ const Opcode op_table[OPCODE_COUNT] = {
 	{ "DVS", op_dvs, addr_abs, 3, 9 },
 };
 
+static inline void set_signzero(Cpu *cpu, u32 data) {
+	bit_set(&cpu->status, ST_ZERO, data == 0);
+	bit_set(&cpu->status, ST_SIGN, data & 0x8000);
+}
+
+static inline void set_carry(Cpu *cpu, u32 data) {
+	bit_set(&cpu->status, ST_CARRY, data > 0xffff);
+}
+
+static inline void set_overflow(Cpu *cpu, u32 data1, u32 data2, u32 result) {
+	bool has_overflow = (data1 ^ result) & (data2 ^ result) & 0x8000 != 0;
+	bit_set(&cpu->status, ST_OVERFLOW, has_overflow);
+}
+
+static u16 operand_read(Cpu *cpu) {
+	if (cpu->operand.is_addr) {
+		return ram_read16(cpu, cpu->operand.dest);
+	}
+
+	return cpu->regs[cpu->operand.dest];
+}
+
+static void operand_write(Cpu *cpu, u16 data) {
+	if (cpu->operand.is_addr) {
+		ram_write16(cpu, cpu->operand.dest, data);
+	} else {
+		cpu->regs[cpu->operand.dest] = data;
+	}
+}
+
 void opcode_execute(Cpu *cpu) {
 	Opcode current = op_table[cpu->current_opcode & 0x00ff];
 	if (current.handler == NULL) {
@@ -99,8 +130,7 @@ void opcode_execute(Cpu *cpu) {
 	}
 
 	current.addr(cpu, current.addr_mode);
-
-	/* TODO: Execute instruction handler */
+	current.handler(cpu);
 
 	cpu->cycles += current.cycles;
 }
@@ -161,16 +191,13 @@ void addr_ind(Cpu *cpu, u8 mode) {
 }
 
 void addr_rel(Cpu *cpu, u8 mode) {
-	u16 offset = ram_read16(cpu, cpu->program_counter);
+	cpu->operand.offset = ram_read16(cpu, cpu->program_counter);
 	cpu->program_counter += 2;
 
 	if (mode == 0) { /* (Offset), Const */
 		cpu->operand.src = ram_read16(cpu, cpu->program_counter);
 		cpu->program_counter += 2;
 	}
-
-	cpu->operand.dest = offset;
-	cpu->operand.is_addr = false;
 }
 
 void addr_abs(Cpu *cpu, u8 mode) {
@@ -204,4 +231,158 @@ void addr_abs(Cpu *cpu, u8 mode) {
 
 		break;
 	}
+}
+
+void op_add(Cpu *cpu) {
+	u32 result = operand_read(cpu);
+	result += cpu->operand.src + bit_get(cpu->status, ST_CARRY);
+
+	operand_write(cpu, result);
+
+	set_signzero(cpu, result);
+	set_carry(cpu, result);
+	set_overflow(cpu, cpu->operand.dest, cpu->operand.src, result);
+}
+
+void op_and(Cpu *cpu) {
+	u16 result = operand_read(cpu) & cpu->operand.src;
+	operand_write(cpu, result);
+
+	set_signzero(cpu, result);
+}
+
+void op_bif(Cpu *cpu) {
+	if ((cpu->status & cpu->operand.src) == cpu->operand.src) {
+		cpu->program_counter += cpu->operand.offset;
+	}
+}
+
+void op_bnf(Cpu *cpu) {
+	if ((cpu->status & cpu->operand.src) == 0x0) {
+		cpu->program_counter += cpu->operand.offset;
+	}
+}
+
+void op_bra(Cpu *cpu) {
+	cpu->program_counter += cpu->operand.offset;
+}
+
+void op_clr(Cpu *cpu) {
+	cpu->status |= cpu->operand.src;
+}
+
+void op_cmp(Cpu *cpu) {
+	u16 dest = operand_read(cpu);
+
+	bit_set(&cpu->status, ST_CARRY, dest >= cpu->operand.src);
+	bit_set(&cpu->status, ST_ZERO, dest == cpu->operand.src);
+	bit_set(&cpu->status, ST_SIGN, (dest - cpu->operand.src) & 0x8000);
+}
+
+void op_dec(Cpu *cpu) {
+	u16 result = operand_read(cpu) - 1;
+	operand_write(cpu, result);
+
+	set_signzero(cpu, result);
+}
+
+void op_div(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_dvs(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_hlt(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_inc(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_ior(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_jmp(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_jsr(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_mls(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_mov(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_mul(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_nop(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_not(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_pop(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_psh(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_ret(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_rol(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_ror(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_rti(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_set(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_shl(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_shr(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_sub(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_tst(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_xor(Cpu *cpu) {
+	(void)cpu;
+}
+
+void op_xxx(Cpu *cpu) {
+	(void)cpu;
+	/* TODO: Trigger interrupt request: Illegal Instruction */
 }
