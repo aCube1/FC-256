@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+#define bit_get(data, pos)         bit_getn((data), (pos), 0x1)
+#define bit_set(data, pos, enable) *(data) = bit_setn(*(data), (pos), 0x1, (enable))
+
 usize bit_getn(usize data, u8 pos, usize mask);
 usize bit_setn(usize data, u8 pos, usize mask, bool enable);
 
