@@ -1,7 +1,7 @@
 #include "emu/opcode.h"
 
 #include "common.h"
-#include "log/log.h"
+#include "log.h"
 
 const Opcode op_table[OPCODE_COUNT] = {
 	{ "NOP", op_nop, NULL, 0, 1 },     { "HLT", op_hlt, NULL, 0, 1 },     { "???", op_xxx, NULL, 0, 1 },

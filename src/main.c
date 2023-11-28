@@ -1,5 +1,5 @@
 #include "emu/cpu.h"
-#include "log/log.h"
+#include "log.h"
 
 #include <stdlib.h>
 

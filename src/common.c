@@ -1,6 +1,6 @@
 #include "common.h"
 
-#include "log/log.h"
+#include "log.h"
 
 usize bit_getn(usize data, u8 pos, usize mask) {
 	return (data >> pos) & mask;

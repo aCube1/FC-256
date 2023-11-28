@@ -2,7 +2,7 @@
 
 #include "common.h"
 #include "emu/opcode.h"
-#include "log/log.h"
+#include "log.h"
 
 #include <string.h>
 

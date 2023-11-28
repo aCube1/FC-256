@@ -18,13 +18,13 @@ target_sources(
 	PRIVATE
 		include/emu/cpu.h
 		include/emu/opcode.h
-		include/log/log.h
+		include/log.h
 		include/common.h
 		include/types.h
 
 		src/emu/cpu.c
 		src/emu/opcode.c
-		src/log/log.c
+		src/log.c
 		src/common.c
 		src/main.c
 )
