@@ -58,7 +58,7 @@ u16 ram_read16(Cpu *cpu, u32 addr) {
 		exit(EXIT_FAILURE);
 	}
 
-	return cpu->ram[addr] | (cpu->ram[addr + 1] << 8);
+	return (cpu->ram[addr + 1] << 8) | cpu->ram[addr];
 }
 
 u32 ram_read32(Cpu *cpu, u32 addr) {
@@ -79,6 +79,16 @@ void ram_write16(Cpu *cpu, u32 addr, u16 data) {
 		exit(EXIT_FAILURE);
 	}
 
-	cpu->ram[addr] = data & 0xff;   /* Write low byte */
+	cpu->ram[addr] = data & 0x00ff; /* Write low byte */
 	cpu->ram[addr + 1] = data >> 8; /* Write high byte */
+}
+
+u16 stack_pop(Cpu *cpu) {
+	cpu->stack_pointer -= 2;
+	return ram_read16(cpu, cpu->stack_pointer);
+}
+
+void stack_push(Cpu *cpu, u16 data) {
+	ram_write16(cpu, cpu->stack_pointer, data);
+	cpu->stack_pointer += 2;
 }

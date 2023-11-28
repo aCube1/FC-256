@@ -78,4 +78,7 @@ u32 ram_read32(Cpu *cpu, u32 addr);
 
 void ram_write16(Cpu *cpu, u32 addr, u16 data);
 
+u16 stack_pop(Cpu *cpu);
+void stack_push(Cpu *cpu, u16 data);
+
 #endif /* _EMU_CPU_H_ */
