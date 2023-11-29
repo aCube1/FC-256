@@ -146,7 +146,7 @@ Opcode | Addr Mode | Operand   | Cycles
 
 
 ==== DIV - Unsigned Divide ====
-- Divide D1 by D2, store the quocient in D1, and push the remainder into
+- Divide D1 by D2, store the quocient in D1, and push the remainder onto
 the Stack. Division by Zero will produce the result of 0xffff, a remainder
 that is equal to the dividend and trigger the DivZero interrupt vector.
 
@@ -192,7 +192,7 @@ Opcode | Addr Mode | Operand          | Cycles
 
 
 ==== HLT - Halt/Wait ====
-- Set CPU into a Wait state until a Interrupt Request is triggerred.
+- Set CPU in a Wait state until a Interrupt Request is triggerred.
 
 == Status Register ==
 Carry Flag       | Not affected
@@ -263,7 +263,7 @@ Opcode | Addr Mode | Operand   | Cycles
 
 
 ==== JSR - Jump to Subroutine ====
-- Pushes the Program Counter (minus one) into the Stack. Then set the
+- Pushes the Program Counter (minus one) onto the Stack. Then set the
 Program Counter to the target memory address.
 
 == Status Register ==
@@ -325,10 +325,10 @@ Opcode | Addr Mode | Operand          | Cycles
 
 ==== MUL - Unsigned Multiply ====
 - Multiply D1 by D2, store the Low Word of product in D1 and push the High
-Word into the Stack. The High Word is only pushed if the Carry Flag was set.
+Word onto the Stack. The High Word is only pushed if the Carry Flag was set.
 
 == Status Register ==
-Carry Flag       | Set if High Word was pushed into the Stack
+Carry Flag       | Set if High Word was pushed onto the Stack
 Zero Flag        | Set if product is Zero
 Ignore Interrupt | Not affected
 Overflow Flag    | Set if the High Word is Negative
@@ -397,7 +397,7 @@ Opcode | Addr Mode | Operand   | Cycles
 
 
 ==== PSH - Stack Push ====
-- Increment Stack Pointer by 2, and Push a 16 bit copy of D1 into Stack.
+- Increment Stack Pointer by 2, and Push a 16 bit copy of D1 onto Stack.
 
 == Status Register ==
 Carry Flag       | Not affected
