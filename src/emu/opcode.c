@@ -3,6 +3,7 @@
 #include "common.h"
 #include "log.h"
 
+/* clang-format off */
 const Opcode op_table[OPCODE_COUNT] = {
 	{ "NOP", op_nop, NULL, 0, 1 },     { "HLT", op_hlt, NULL, 0, 1 },     { "???", op_xxx, NULL, 0, 1 },
 	{ "???", op_xxx, NULL, 0, 1 },     { "???", op_xxx, NULL, 0, 1 },     { "???", op_xxx, NULL, 0, 1 },
@@ -90,7 +91,7 @@ const Opcode op_table[OPCODE_COUNT] = {
 	{ "ROL", op_rol, addr_abs, 3, 7 }, { "ROR", op_ror, addr_abs, 3, 7 }, { "CMP", op_cmp, addr_abs, 3, 7 },
 	{ "MUL", op_mul, addr_abs, 3, 9 }, { "MLS", op_mls, addr_abs, 3, 9 }, { "DIV", op_div, addr_abs, 3, 9 },
 	{ "DVS", op_dvs, addr_abs, 3, 9 },
-};
+}; /* clang-format on */
 
 static inline void set_signzero(Cpu *cpu, u32 data) {
 	bit_set(&cpu->status, ST_ZERO, data == 0);
@@ -383,6 +384,5 @@ void op_xor(Cpu *cpu) {
 }
 
 void op_xxx(Cpu *cpu) {
-	(void)cpu;
-	/* TODO: Trigger interrupt request: Illegal Instruction */
+	cpu_exception(cpu, VEC_INSTR);
 }

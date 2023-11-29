@@ -2,16 +2,8 @@
 
 #include "common.h"
 #include "emu/opcode.h"
-#include "log.h"
 
 #include <string.h>
-
-static void set_stackpointer(Cpu *cpu, u32 pointer) {
-
-	cpu->stack_pointer = pointer;
-	cpu->regs[REG_LSP] = pointer & 0x0000ffff;
-	cpu->regs[REG_HSP] = pointer >> 16;
-}
 
 void cpu_powerup(Cpu *cpu) {
 	if (cpu->ram == NULL) {
@@ -27,16 +19,69 @@ void cpu_shutdown(Cpu *cpu) {
 }
 
 void cpu_reset(Cpu *cpu) {
-	cpu->program_counter = ram_read32(cpu, VECTOR_ADDR | VEC_RESET);
-	set_stackpointer(cpu, ram_read32(cpu, VECTOR_ADDR | VEC_STACK));
+	cpu->program_counter = ram_read32(cpu, VECTOR_ADDR | VEC_RESET) & 0x00ffffff;
 
-	/* Clear status, and set Ignore Interrupts flag */
-	cpu->status = 0x0004;
+	cpu->stack_pointer = ram_read32(cpu, VECTOR_ADDR | VEC_STACK);
+	cpu->stack_pointer &= 0x00ffffff; /* Ignore last byte */
 
-	cpu->cycles = 6; /* Reset takes 6 cycles to complete */
+	cpu->regs[REG_X] = cpu->stack_pointer;
+	cpu->regs[REG_Y] = cpu->stack_pointer >> 16;
+
+	cpu->status = 0x0004; /* Clear status, and set Ignore Interrupt flag */
+	cpu->cycles = 6;
+}
+
+void cpu_hardware_request(Cpu *cpu, u8 type) {
+	if (cpu->cycles != 0) {
+		/* Can't execute interrupt if instruction is executing. */
+		cpu->buf_interrupt = true;
+		cpu->next_interrupt = type;
+		return;
+	}
+
+	if (type == VEC_IRQ && bit_get(cpu->status, ST_INTERRUPT)) {
+		return;
+	}
+
+	stack_push(cpu, cpu->program_counter);
+	stack_push(cpu, cpu->program_counter >> 16);
+	stack_push(cpu, cpu->status);
+
+	cpu->program_counter = ram_read32(cpu, VEC_ADDRESS | type) & 0x00ffffff;
+
+	cpu->cycles += type == VEC_IRQ ? 8 : 7;
+}
+
+void cpu_exception(Cpu *cpu, u8 type) {
+	switch (type) {
+	case VEC_DIVZERO:
+		cpu->cycles += 5;
+		break;
+	case VEC_INSTR:
+		cpu->program_counter += 2;
+		cpu->cycles += 6;
+		break;
+	case VEC_ADDRESS:
+		if (cpu->cycles != 0) {
+			/* Can't execute interrupt if instruction is executing. */
+			cpu->buf_interrupt = true;
+			cpu->next_interrupt = VEC_ADDRESS;
+			return;
+		}
+		cpu->cycles += 6;
+		break;
+	}
 }
 
 void cpu_step(Cpu *cpu) {
+	if (cpu->buf_interrupt) {
+		if (cpu->next_interrupt == VEC_ADDRESS) {
+			cpu_exception(cpu, cpu->next_interrupt);
+		} else {
+			cpu_hardware_request(cpu, cpu->next_interrupt);
+		}
+	}
+
 	cpu->current_opcode = ram_read16(cpu, cpu->program_counter);
 	cpu->program_counter += 2;
 
@@ -53,30 +98,31 @@ void cpu_clock(Cpu *cpu) {
 }
 
 u16 ram_read16(Cpu *cpu, u32 addr) {
-	if (addr < 0 || addr > RAM_SIZE) {
-		log_fatal("Attempt to read address %#x is out of bounds!", addr);
-		exit(EXIT_FAILURE);
+	if (addr > RAM_SIZE) {
+		cpu_exception(cpu, VEC_ADDRESS);
+		addr &= 0x00ffffff;
 	}
 
-	return (cpu->ram[addr + 1] << 8) | cpu->ram[addr];
+	u8 low = cpu->ram[addr];
+	u8 high = cpu->ram[addr + 1];
+	return (high << 8) | low;
 }
 
 u32 ram_read32(Cpu *cpu, u32 addr) {
-	u16 low = ram_read16(cpu, addr);
-	u16 high = ram_read16(cpu, addr + 2);
-
-	if ((high & 0xff00) != 0x00) {
-		/* TODO: Trigger interrupt request: Illegal Address */
-		log_trace("32-bit data readed has set the last byte!");
+	if (addr > RAM_SIZE) {
+		cpu_exception(cpu, VEC_ADDRESS);
+		addr &= 0x00ffffff;
 	}
 
+	u16 low = ram_read16(cpu, addr);
+	u16 high = ram_read16(cpu, addr + 2);
 	return (high << 16) | low;
 }
 
 void ram_write16(Cpu *cpu, u32 addr, u16 data) {
-	if (addr < 0 || addr > RAM_SIZE) {
-		log_fatal("Attempt to write on address %#x is out of bounds!", addr);
-		exit(EXIT_FAILURE);
+	if (addr > RAM_SIZE) {
+		cpu_exception(cpu, VEC_ADDRESS);
+		addr &= 0x00ffffff;
 	}
 
 	cpu->ram[addr] = data & 0x00ff; /* Write low byte */

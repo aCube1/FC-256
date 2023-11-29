@@ -3,14 +3,14 @@
 
 #include "types.h"
 
-/* NOTE: RAM has 16MiB of addrassable memory. */
+/* NOTE: RAM has 16MiB of addressable memory. */
 #define RAM_SIZE    16777216u
 
 #define VECTOR_ADDR 0xffff00u
 
 enum SystemVectors {
 	VEC_ADDRESS = 0xe4, /* 0xe4-e7: Illegal Address */
-	VEC_ILLEGAL = 0xe8, /* 0xe8-eb: Illegal Instruction */
+	VEC_INSTR = 0xe8,   /* 0xe8-eb: Illegal Instruction */
 	VEC_DIVZERO = 0xec, /* 0xec-ef: Division by Zero */
 	VEC_NMI = 0xf0,     /* 0xf0-f3: Hardware NMI */
 	VEC_IRQ = 0xf4,     /* 0xf4-f7: Hardware IRQ */
@@ -41,8 +41,8 @@ enum Registers {
 	REG_D,
 	REG_E,
 	REG_F,
-	REG_LSP, /* rX */
-	REG_HSP, /* rY */
+	REG_X, /* LSP */
+	REG_Y, /* HSP */
 	REG_COUNT,
 };
 
@@ -64,12 +64,17 @@ typedef struct Cpu {
 
 	u16 cycles; /* Remaining cycles */
 	u16 current_opcode;
+	bool buf_interrupt; /* Interrupt has been buffered */
+	u8 next_interrupt;
 } Cpu;
 
 void cpu_powerup(Cpu *cpu);
 void cpu_shutdown(Cpu *cpu);
 
 void cpu_reset(Cpu *cpu);
+void cpu_hardware_request(Cpu *cpu, u8 type);
+void cpu_exception(Cpu *cpu, u8 type);
+
 void cpu_step(Cpu *cpu);
 void cpu_clock(Cpu *cpu);
 

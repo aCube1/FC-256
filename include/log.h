@@ -1,5 +1,5 @@
-#ifndef _LOG_LOG_H_
-#define _LOG_LOG_H_
+#ifndef _LOG_H_
+#define _LOG_H_
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #define log_error(...) log_message(LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__)
 #define log_fatal(...) log_message(LOG_FATAL, __FILE__, __LINE__, __VA_ARGS__)
 
-enum {
+enum LogLevel {
 	LOG_TRACE,
 	LOG_DEBUG,
 	LOG_INFO,
@@ -30,4 +30,4 @@ enum {
  */
 void log_message(int level, const char *file, int line, const char *fmt, ...);
 
-#endif /* _LOG_LOG_H_ */
+#endif /* _LOG_H_ */
