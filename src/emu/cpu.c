@@ -40,19 +40,27 @@ void cpu_hardware_request(Cpu *cpu, u8 type) {
 	}
 
 	if (type == VEC_IRQ && bit_get(cpu->status, ST_INTERRUPT)) {
-		return;
+		return; /* Interrupt is disabled */
 	}
 
 	stack_push(cpu, cpu->program_counter);
 	stack_push(cpu, cpu->program_counter >> 16);
 	stack_push(cpu, cpu->status);
 
+	bit_set(&cpu->status, ST_INTERRUPT, true);
 	cpu->program_counter = ram_read32(cpu, VEC_ADDRESS | type) & 0x00ffffff;
 
 	cpu->cycles += type == VEC_IRQ ? 8 : 7;
 }
 
 void cpu_exception(Cpu *cpu, u8 type) {
+	if (cpu->cycles != 0) {
+		/* Can't execute interrupt if instruction is executing. */
+		cpu->buf_interrupt = true;
+		cpu->next_interrupt = VEC_ADDRESS;
+		return;
+	}
+
 	switch (type) {
 	case VEC_DIVZERO:
 		cpu->cycles += 5;
@@ -62,15 +70,15 @@ void cpu_exception(Cpu *cpu, u8 type) {
 		cpu->cycles += 6;
 		break;
 	case VEC_ADDRESS:
-		if (cpu->cycles != 0) {
-			/* Can't execute interrupt if instruction is executing. */
-			cpu->buf_interrupt = true;
-			cpu->next_interrupt = VEC_ADDRESS;
-			return;
-		}
 		cpu->cycles += 6;
 		break;
 	}
+
+	stack_push(cpu, cpu->program_counter);
+	stack_push(cpu, cpu->program_counter >> 16);
+	stack_push(cpu, cpu->status);
+
+	cpu->program_counter = ram_read32(cpu, VEC_ADDRESS | type) & 0x00ffffff;
 }
 
 void cpu_step(Cpu *cpu) {
