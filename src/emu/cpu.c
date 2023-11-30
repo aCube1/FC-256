@@ -3,103 +3,146 @@
 #include "common.h"
 #include "emu/opcode.h"
 
-#include <stdlib.h>
 #include <string.h>
 
-void cpuPowerUp(CPU *cpu) {
-	if (cpu->memory == NULL) {
-		cpu->memory = xcalloc(RAM_SIZE, sizeof(u8));
+void cpu_powerup(Cpu *cpu) {
+	if (cpu->ram == NULL) {
+		cpu->ram = xcalloc(RAM_SIZE, sizeof(u8));
 	}
 
-	/* Reset general registers */
-	memset(cpu->regs, 0, sizeof(u8) * REGS_COUNT);
+	memset(cpu->regs, 0, sizeof(u16) * REG_COUNT);
 }
 
-void cpuShutdown(CPU *cpu) {
-	free(cpu->memory);
-	cpu->memory = NULL;
+void cpu_shutdown(Cpu *cpu) {
+	free(cpu->ram);
+	cpu->ram = NULL;
 }
 
-void cpuReset(CPU *cpu) {
-	/* Jump to reset routine */
-	cpu->actual_pc = cpuMemRead24(cpu, VEC_RESET);
-	cpu->regs[REG_PC] = cpu->actual_pc & 0xffff;
+void cpu_reset(Cpu *cpu) {
+	cpu->program_counter = ram_read32(cpu, VECTOR_ADDR | VEC_RESET) & 0x00ffffff;
 
-	cpu->status = 0xe0; /* NOTE: Always set the unused bits. */
+	cpu->stack_pointer = ram_read32(cpu, VECTOR_ADDR | VEC_STACK);
+	cpu->stack_pointer &= 0x00ffffff; /* Ignore last byte */
 
-	cpu->cycles = 8;
+	cpu->regs[REG_X] = cpu->stack_pointer;
+	cpu->regs[REG_Y] = cpu->stack_pointer >> 16;
+
+	cpu->status = 0x0004; /* Clear status, and set Ignore Interrupt flag */
+	cpu->cycles = 6;
 }
 
-void cpuClock(CPU *cpu) {
-	if (cpu->cycles == 0) {
-		cpu->opcode = cpuMemRead16(cpu, cpu->actual_pc);
-		cpu->actual_pc += 2;
-		cpu->regs[REG_PC] = cpu->actual_pc & 0xffff;
-
-		u8 identifier = bitGetN(cpu->opcode, OP_IDENTIFIER_START, OP_IDENTIFIER_MASK);
-		u8 addr_mode = bitGetN(cpu->opcode, OP_ADDRMODE_START, OP_ADDRMODE_MASK);
-		if (opcode_addresses[addr_mode] != NULL) {
-			u8 first_reg = bitGetN(cpu->opcode, OP_FIRSTREG_START, OP_FIRSTREG_MASK);
-			u8 second_reg = bitGetN(cpu->opcode, OP_SECONDREG_START, OP_SECONDREG_MASK);
-
-			cpu->cycles += opcode_addresses[addr_mode](cpu, addr_mode, first_reg, second_reg);
-		}
-		if (opcode_handlers[identifier] != NULL) {
-
-			cpu->cycles += opcode_handlers[identifier](cpu);
-		}
-	}
-
-	cpu->cycles -= 1;
-}
-
-u8 cpuMemRead(CPU *cpu, u32 addr) {
-	if (cpu->memory == NULL) {
-		log_error("Unable to read unallocated RAM!");
-		return 0x00;
-	}
-
-	if (addr < 0 || addr > RAM_SIZE) {
-		log_error("Address %#x is out of bounds!", addr);
-		return 0x00;
-	}
-
-	return cpu->memory[addr];
-}
-
-u16 cpuMemRead16(CPU *cpu, u32 addr) {
-	u8 l = cpuMemRead(cpu, addr);
-	u8 h = cpuMemRead(cpu, addr + 1);
-
-	return (h << 8) | l;
-}
-
-u32 cpuMemRead24(CPU *cpu, u32 addr) {
-	u16 data = cpuMemRead16(cpu, addr);
-	u8 bank = cpuMemRead(cpu, addr + 2);
-
-	return (bank << 16) | data;
-}
-
-void cpuMemWrite(CPU *cpu, u32 addr, u8 data) {
-	if (cpu->memory == NULL) {
-		log_error("Unable to write on unallocated RAM!");
+void cpu_hardware_request(Cpu *cpu, u8 type) {
+	if (cpu->cycles != 0) {
+		/* Can't execute interrupt if instruction is executing. */
+		cpu->buf_interrupt = true;
+		cpu->next_interrupt = type;
 		return;
 	}
 
-	if (addr < 0 || addr > RAM_SIZE) {
-		log_error("Address %#x is out of bounds!", addr);
+	if (type == VEC_IRQ && bit_get(cpu->status, ST_INTERRUPT)) {
+		return; /* Interrupt is disabled */
 	}
 
-	cpu->memory[addr] = data;
+	stack_push(cpu, cpu->program_counter);
+	stack_push(cpu, cpu->program_counter >> 16);
+	stack_push(cpu, cpu->status);
+
+	bit_set(&cpu->status, ST_INTERRUPT, true);
+	cpu->program_counter = ram_read32(cpu, VEC_ADDRESS | type) & 0x00ffffff;
+
+	cpu->cycles += type == VEC_IRQ ? 8 : 7;
 }
 
-void cpuMemWrite16(CPU *cpu, u32 addr, u16 data) {
-	cpuMemWrite(cpu, addr, data & 0xff);   /* Low byte */
-	cpuMemWrite(cpu, addr + 1, data >> 8); /* High byte */
+void cpu_exception(Cpu *cpu, u8 type) {
+	if (cpu->cycles != 0) {
+		/* Can't execute interrupt if instruction is executing. */
+		cpu->buf_interrupt = true;
+		cpu->next_interrupt = VEC_ADDRESS;
+		return;
+	}
+
+	switch (type) {
+	case VEC_DIVZERO:
+		cpu->cycles += 5;
+		break;
+	case VEC_INSTR:
+		cpu->program_counter += 2;
+		cpu->cycles += 6;
+		break;
+	case VEC_ADDRESS:
+		cpu->cycles += 6;
+		break;
+	}
+
+	stack_push(cpu, cpu->program_counter);
+	stack_push(cpu, cpu->program_counter >> 16);
+	stack_push(cpu, cpu->status);
+
+	cpu->program_counter = ram_read32(cpu, VEC_ADDRESS | type) & 0x00ffffff;
 }
 
-void cpuMemWrite24(CPU *cpu, u32 addr, u32 data) {
-	cpuMemWrite16(cpu, addr, data & 0xffff); /* Data bytes */
-	cpuMemWrite(cpu, addr + 2, data >> 16);  /* Bank byte */
+void cpu_step(Cpu *cpu) {
+	if (cpu->buf_interrupt) {
+		if (cpu->next_interrupt == VEC_ADDRESS) {
+			cpu_exception(cpu, cpu->next_interrupt);
+		} else {
+			cpu_hardware_request(cpu, cpu->next_interrupt);
+		}
+	}
+
+	cpu->current_opcode = ram_read16(cpu, cpu->program_counter);
+	cpu->program_counter += 2;
+
+	opcode_execute(cpu);
+}
+
+void cpu_clock(Cpu *cpu) {
+	if (cpu->cycles != 0) {
+		cpu->cycles -= 1;
+		return;
+	}
+
+	cpu_step(cpu);
+}
+
+u16 ram_read16(Cpu *cpu, u32 addr) {
+	if (addr > RAM_SIZE) {
+		cpu_exception(cpu, VEC_ADDRESS);
+		addr &= 0x00ffffff;
+	}
+
+	u8 low = cpu->ram[addr];
+	u8 high = cpu->ram[addr + 1];
+	return (high << 8) | low;
+}
+
+u32 ram_read32(Cpu *cpu, u32 addr) {
+	if (addr > RAM_SIZE) {
+		cpu_exception(cpu, VEC_ADDRESS);
+		addr &= 0x00ffffff;
+	}
+
+	u16 low = ram_read16(cpu, addr);
+	u16 high = ram_read16(cpu, addr + 2);
+	return (high << 16) | low;
+}
+
+void ram_write16(Cpu *cpu, u32 addr, u16 data) {
+	if (addr > RAM_SIZE) {
+		cpu_exception(cpu, VEC_ADDRESS);
+		addr &= 0x00ffffff;
+	}
+
+	cpu->ram[addr] = data & 0x00ff; /* Write low byte */
+	cpu->ram[addr + 1] = data >> 8; /* Write high byte */
+}
+
+u16 stack_pop(Cpu *cpu) {
+	cpu->stack_pointer -= 2;
+	return ram_read16(cpu, cpu->stack_pointer);
+}
+
+void stack_push(Cpu *cpu, u16 data) {
+	ram_write16(cpu, cpu->stack_pointer, data);
+	cpu->stack_pointer += 2;
 }

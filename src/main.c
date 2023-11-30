@@ -1,5 +1,5 @@
 #include "asm/lex.h"
-#include "log/log.h"
+#include "log.h"
 
 #include <stdlib.h>
 
@@ -16,20 +16,21 @@ int main(int argc, char *argv[]) {
 	}
 
 	Lexer lexer;
-	lexInit(&lexer, file, 0);
+	lex_init(&lexer, file, 0);
 
 	TokenType type = TOK_NONE;
 	while (type != TOK_EOF) {
 		Token token;
 
-		type = lexScan(&lexer, &token);
+		type = lex_scan(&lexer, &token);
 
 		log_debug(
-			"%s - %zd:%zd: %d -> %#x", argv[1], token.location.lineno, token.location.colno, token.type, token.uval
+			"%s - %zd:%zd: %d -> %#x", argv[1], token.location.lineno,
+			token.location.colno, token.type, token.uval
 		);
 		token.uval = 0;
 	}
 
-	lexQuit(&lexer);
+	lex_quit(&lexer);
 	return EXIT_SUCCESS;
 }

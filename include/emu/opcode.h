@@ -1,62 +1,57 @@
-#ifndef _EMU_OPCODES_H_
-#define _EMU_OPCODES_H_
+#ifndef _EMU_OPCODE_H_
+#define _EMU_OPCODE_H_
 
 #include "emu/cpu.h"
+#include "types.h"
 
-#define OPCODE_COUNT        0x40
+#define OPCODE_COUNT (UINT8_MAX + 1)
 
-#define OP_IDENTIFIER_START 0
-#define OP_IDENTIFIER_MASK  0x3f
+typedef struct Opcode {
+	const char name[4];
+	void (*handler)(Cpu *);
+	void (*addr)(Cpu *, u8);
+	u8 addr_mode; /* 0 -> 3 */
+	u8 cycles;
+} Opcode;
 
-#define OP_ADDRMODE_START   6
-#define OP_ADDRMODE_MASK    0x0f
+extern const Opcode op_table[OPCODE_COUNT];
 
-#define OP_FIRSTREG_START   10
-#define OP_FIRSTREG_MASK    0x07
+void opcode_execute(Cpu *cpu);
 
-#define OP_SECONDREG_START  13
-#define OP_SECONDREG_MASK   0x07
+/* Register  - 0 - r1, r2
+ * Register  - 1 - r1 */
+void addr_reg(Cpu *cpu, u8 mode);
 
-/* NOTE: All handlers always return the cycles taken. */
-typedef u8 (*AddrHandler)(CPU *, u8, u8, u8);
-typedef u8 (*OpcodeHandler)(CPU *);
+/* Immediate - 0 - r1, Const
+ * Immediate - 1 - Const */
+void addr_imm(Cpu *cpu, u8 mode);
 
-enum AddressingMode {
-	ADDR_IMP,   /* 0x00 - Implied   : No Operand */
-	ADDR_REL,   /* 0x01 - Relative  : Offset */
-	ADDR_IMM,   /* 0x02 - Immediate : rX, Const */
-	ADDR_REG_1, /* 0x03 - Register  : rX */
-	ADDR_REG_2, /* 0x04 - Register  : rX, rY */
-	ADDR_ABS_1, /* 0x05 - Absolute  : [Addr] */
-	ADDR_ABS_2, /* 0x06 - Absolute  : [Addr], Const */
-	ADDR_ABS_3, /* 0x07 - Absolute  : [Addr], rX */
-	ADDR_ABS_4, /* 0x08 - Absolute  : rX, [Addr] */
-	ADDR_BNK_1, /* 0x09 - Banked    : [Bank:rX] */
-	ADDR_BNK_2, /* 0x0a - Banked    : [Bank:rX], Const */
-	ADDR_BNK_3, /* 0x0b - Banked    : [Bank:rX], rY */
-	ADDR_BNK_4, /* 0x0c - Banked    : rX, [Bank:rY] */
-	ADDR_IDX_1, /* 0x0d - Indexed   : [Addr:rX] */
-	ADDR_IDX_2, /* 0x0e - Indexed   : [Addr:rX], rY */
-	ADDR_IDX_3, /* 0x0f - Indexed   : rX, [Addr:rY] */
-	ADDR_COUNT
-};
+/* Indexed - 0 - [Bank:r1], r2
+ * Indexed - 1 - r1, [Bank:r2]
+ * Indexed - 2 - [Bank:r1]
+ * Indexed - 3 - [Bank:r1], Const */
+void addr_ind(Cpu *cpu, u8 mode);
 
-extern AddrHandler opcode_addresses[ADDR_COUNT];
-extern OpcodeHandler opcode_handlers[OPCODE_COUNT];
+/* Relative - 0 - (Offset)
+ * Relative - 1 - (Offset), Const */
+void addr_rel(Cpu *cpu, u8 mode);
 
-u8 addrREL(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg);
-u8 addrIMM(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg);
-u8 addrREG(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg);
-u8 addrABS(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg);
-u8 addrBNK(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg);
-u8 addrIDX(CPU *cpu, u8 addr_mode, u8 first_reg, u8 second_reg);
+/* Absolute - 0 - [Addr]
+ * Absolute - 1 - [Addr], r1
+ * Absolute - 2 - r1, [Addr]
+ * Absolute - 3 - [Addr], Const */
+void addr_abs(Cpu *cpu, u8 mode);
 
-u8 opcodeMOV(CPU *cpu);
-u8 opcodeADD(CPU *cpu);
-u8 opcodeSUB(CPU *cpu);
-u8 opcodeINC(CPU *cpu);
-u8 opcodeDEC(CPU *cpu);
-u8 opcodeMUL(CPU *cpu);
-u8 opcodeDIV(CPU *cpu);
+/* clang-format off */
+void op_add(Cpu *cpu); void op_and(Cpu *cpu); void op_bif(Cpu *cpu); void op_bnf(Cpu *cpu);
+void op_bra(Cpu *cpu); void op_clr(Cpu *cpu); void op_cmp(Cpu *cpu); void op_dec(Cpu *cpu);
+void op_div(Cpu *cpu); void op_dvs(Cpu *cpu); void op_hlt(Cpu *cpu); void op_inc(Cpu *cpu);
+void op_ior(Cpu *cpu); void op_jmp(Cpu *cpu); void op_jsr(Cpu *cpu); void op_mls(Cpu *cpu);
+void op_mov(Cpu *cpu); void op_mul(Cpu *cpu); void op_nop(Cpu *cpu); void op_not(Cpu *cpu);
+void op_pop(Cpu *cpu); void op_psh(Cpu *cpu); void op_ret(Cpu *cpu); void op_rol(Cpu *cpu);
+void op_ror(Cpu *cpu); void op_rti(Cpu *cpu); void op_set(Cpu *cpu); void op_shl(Cpu *cpu);
+void op_shr(Cpu *cpu); void op_sub(Cpu *cpu); void op_tst(Cpu *cpu); void op_xor(Cpu *cpu);
+void op_xxx(Cpu *cpu);
+/* clang-format on */
 
-#endif /* _EMU_OPCODES_H_ */
+#endif /*cpu _EMU_OPCODE_H_ */

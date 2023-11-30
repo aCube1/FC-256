@@ -1,74 +1,621 @@
 ======== FC-256 CPU Instructions ========
-* Note: The last 6-bits are not calculated in this table.
 
-Code  | Mnemonic | Address Mode | Execution            | Cycles^
-0x080 |   MOV    |   Immediate  | r1 = Const           |   3
-0x100 |   MOV    |   Register   | r1 = r2              |   3
-0x180 |   MOV    |   Absolute   | mem[Addr] = Const    |   3
-0x1c0 |   MOV    |   Absolute   | mem[Addr] = r1       |   3
-0x200 |   MOV    |   Absolute   | r1 = mem[Addr]       |   3
-0x280 |   MOV    |   Banked     | mem[BK + r1] = Const |   4
-0x2c0 |   MOV    |   Banked     | mem[BK + r1] = r2    |   4
-0x300 |   MOV    |   Banked     | r1 = mem[BK + r2]    |   4
-0x380 |   MOV    |   Indexed    | mem[Addr + r1] = r2  |   5
-0x3c0 |   MOV    |   Indexed    | r1 = mem[Addr + r1]  |   5
+==== ADD - Add with Carry ====
+- Add D1 and D2 with Carry bit, and store result in D1.
 
-Code  | Mnemonic | Address Mode | Execution                 | Cycles^
-0x081 |   ADD    |   Immediate  | r1 += Const + C           |   4
-0x101 |   ADD    |   Register   | r1 += r2 + C              |   4
-0x181 |   ADD    |   Absolute   | mem[Addr] += Const + C    |   4
-0x1c1 |   ADD    |   Absolute   | mem[Addr] += r1 + C       |   4
-0x201 |   ADD    |   Absolute   | r1 += mem[Addr] + C       |   4
-0x281 |   ADD    |   Banked     | mem[BK + r1] += Const + C |   5
-0x2c1 |   ADD    |   Banked     | mem[BK + r1] += r2 + C    |   5
-0x301 |   ADD    |   Banked     | r1 += mem[BK + r2] + C    |   5
-0x381 |   ADD    |   Indexed    | mem[Addr + r1] += r2 + C  |   6
-0x3c1 |   ADD    |   Indexed    | r1 += mem[Addr + r2] + C  |   6
+== Status Register ==
+Carry Flag       | Set if overflow on 15th bit
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Set if bit sign is incorrect
+Sign Flag        | Set if the result is Negative
 
-Code  | Mnemonic | Address Mode | Execution                  | Cycles^
-0x082 |   SUB    |   Immediate  | r1 += ~Const + C           |   4
-0x102 |   SUB    |   Register   | r1 += ~r2 + C              |   4
-0x182 |   SUB    |   Absolute   | mem[Addr] += ~Const + C    |   4
-0x1c2 |   SUB    |   Absolute   | mem[Addr] += ~r1 + C       |   4
-0x202 |   SUB    |   Absolute   | r1 += ~mem[Addr] + C       |   4
-0x282 |   SUB    |   Banked     | mem[BK + r1] += ~Const + C |   5
-0x2c2 |   SUB    |   Banked     | mem[BK + r1] += ~r2 + C    |   5
-0x302 |   SUB    |   Banked     | r1 += ~mem[BK + r2] + C    |   5
-0x382 |   SUB    |   Indexed    | mem[Addr + r1] += ~r2 + C  |   6
-0x3c2 |   SUB    |   Indexed    | r1 += ~mem[Addr + r2] + C  |   6
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x15  | Register  | r1, r2           |   4
+ 0x35  | Immediate | r1, Const        |   5
+ 0x55  | Indexed   | [Bank:r1], r2    |   5
+ 0x75  | Indexed   | r1, [Bank:r2]    |   5
+ 0x95  | Indexed   | [Bank:r1], Const |   6
+ 0xb5  | Absolute  | [Addr], r1       |   6
+ 0xd5  | Absolute  | r1, [Addr]       |   6
+ 0xf5  | Absolute  | [Addr], Const    |   7
 
-Code  | Mnemonic | Address Mode | Execution           | Cycles^
-0x0c3 |   INC    |   Register   | r1 += 1             |   2
-0x143 |   INC    |   Absolute   | mem[Addr] += 1      |   2
-0x243 |   INC    |   Banked     | mem[BK + r1] += 1   |   3
-0x343 |   INC    |   Indexed    | mem[Addr + r1] += 1 |   4
 
-Code  | Mnemonic | Address Mode | Execution           | Cycles^
-0x0c4 |   DEC    |   Register   | r1 -= 1             |   2
-0x144 |   DEC    |   Absolute   | mem[Addr] -= 1      |   2
-0x244 |   DEC    |   Banked     | mem[BK + r1] -= 1   |   3
-0x344 |   DEC    |   Indexed    | mem[Addr + r1] -= 1 |   4
+==== AND - Logical AND ====
+- Perform a AND operation, bit a bit, on D1 using the D2 contents.
 
-Code  | Mnemonic | Address Mode | Execution                                          | Cycles^
-0x085 |   MUL    |   Immediate  | r1 * Const; r1: Low, rZ: High                      |   5
-0x105 |   MUL    |   Register   | r1 * r2; r1: Low, rZ: High                         |   5
-0x185 |   MUL    |   Absolute   | mem[Addr] * Const; mem[Addr]: Low, rZ: High        |   5
-0x1c5 |   MUL    |   Absolute   | mem[Addr] * r1; mem[Addr]: Low, rZ: High           |   5
-0x205 |   MUL    |   Absolute   | r1 * mem[Addr]; r1: Low, rZ: High                  |   5
-0x285 |   MUL    |   Banked     | mem[BK + r1] * Const; mem[BK + r1]: Low, rZ: High  |   6
-0x2c5 |   MUL    |   Banked     | mem[BK + r1] * r2; mem[BK + r1]: Low, rZ: High     |   6
-0x305 |   MUL    |   Banked     | r1 * mem[BK + r2]; r1: Low, rZ: High               |   6
-0x385 |   MUL    |   Indexed    | mem[Addr + r1] * r2; mem[Addr + r1]: Low, rZ: High |   7
-0x3c5 |   MUL    |   Indexed    | r1 * mem[Addr + r2]; r1: Low, rZ: High             |   7
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if the 15th bit of the result is set
 
-Code  | Mnemonic | Address Mode | Execution                                      | Cycles^
-0x086 |   DIV    |   Immediate  | r1 /= Const; rZ = mod(Const)                   |   5
-0x106 |   DIV    |   Register   | r1 /= r2; rZ = mod(r2)                         |   5
-0x186 |   DIV    |   Absolute   | mem[Addr] /= Const; rZ = mod(Const)            |   5
-0x1c6 |   DIV    |   Absolute   | mem[Addr] /= r1; rZ = mod(r1)                  |   5
-0x206 |   DIV    |   Absolute   | r1 /= mem[Addr]; rZ = mod(mem[Addr])           |   5
-0x286 |   DIV    |   Banked     | mem[BK + r1] /= Const; rZ = mod(Const)         |   6
-0x2c6 |   DIV    |   Banked     | mem[BK + r1] /= r2; rZ = mod(r2)               |   6
-0x306 |   DIV    |   Banked     | r1 /= mem[BK + r2]; rZ = mod(mem[BK + r2])     |   6
-0x386 |   DIV    |   Indexed    | mem[Addr + r1] /= r2; rZ = mod(mem[Addr + r1]) |   7
-0x3c6 |   DIV    |   Indexed    | r1 /= mem[Addr + r2]; rZ = mod(mem[Addr + r2]) |   7
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x11  | Register  | r1, r2           |   3
+ 0x31  | Immediate | r1, Const        |   4
+ 0x51  | Indexed   | [Bank:r1], r2    |   4
+ 0x71  | Indexed   | r1, [Bank:r2]    |   4
+ 0x91  | Indexed   | [Bank:r1], Const |   5
+ 0xb1  | Absolute  | [Addr], r1       |   5
+ 0xd1  | Absolute  | r1, [Addr]       |   5
+ 0xf1  | Absolute  | [Addr], Const    |   6
+
+
+==== BIF - Branch If Flags ====
+- Perform a AND operation with the ST register using D1 contents, if the result
+is equal to D1, branch to the desired Offset. Result of AND is discarded.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Not affected
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Not affected
+
+== Encoding ==
+Opcode | Addr Mode | Operand         | Cycles
+ 0xc9  | Relative  | (Offset), Const |   6
+
+
+==== BNF - Branch if Not Flags ====
+- Perform a AND operation with the ST register using D1 contents, if the result
+is Zero, branch to the desired Offset. Result of AND is discarded.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Not affected
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Not affected
+
+== Encoding ==
+Opcode | Addr Mode | Operand         | Cycles
+ 0xca  | Relative  | (Offset), Const |   6
+
+
+==== BRA - Branch Unconditionally ====
+- Branch to the desired offset without any condition.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Not affected
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Not affected
+
+== Encoding ==
+Opcode | Addr Mode | Operand  | Cycles
+ 0xab  | Relative  | (Offset) |   4
+
+
+==== CLR - Clear Flags ====
+- Set specified flags by D1 to 0.
+
+== Status Register ==
+Carry Flag       | Can be cleared
+Zero Flag        | Can be cleared
+Ignore Interrupt | Can be cleared
+Overflow Flag    | Can be cleared
+Sign Flag        | Can be cleared
+
+== Encoding ==
+Opcode | Addr Mode | Operand | Cycles
+ 0x45  | Immediate | Const   |   3
+
+
+==== CMP - Compare ====
+- Compare contents of D1 and D2, and set flags as appropriate.
+
+== Status Register ==
+Carry Flag       | Set if D1 >= D2
+Zero Flag        | Set if D1 == D2
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set to 15th bit of result
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x1b  | Register  | r1, r2           |   4
+ 0x3b  | Immediate | r1, Const        |   5
+ 0x5b  | Indexed   | [Bank:r1], r2    |   5
+ 0x7b  | Indexed   | r1, [Bank:r2]    |   5
+ 0x9b  | Indexed   | [Bank:r1], Const |   6
+ 0xbb  | Absolute  | [Addr], r1       |   6
+ 0xdb  | Absolute  | r1, [Addr]       |   6
+ 0xfb  | Absolute  | [Addr], Const    |   7
+
+
+==== DEC - Decrement ====
+- Decrement D1 by 1.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if the result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand   | Cycles
+ 0x23  | Register  | r1        |   2
+ 0x63  | Absolute  | [Addr]    |   4
+ 0x83  | Indexed   | [Bank:r1] |   4
+
+
+==== DIV - Unsigned Divide ====
+- Divide D1 by D2, store the quocient in D1, and push the remainder onto
+the Stack. Division by Zero will produce the result of 0xffff, a remainder
+that is equal to the dividend and trigger the DivZero interrupt vector.
+
+== Status Register ==
+Carry Flag       | Always cleared
+Zero Flag        | Set if quocient is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Undefined
+Sign Flag        | Set if the quocient is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x1e  | Register  | r1, r2           |   6
+ 0x3e  | Immediate | r1, Const        |   7
+ 0x5e  | Indexed   | [Bank:r1], r2    |   7
+ 0x7e  | Indexed   | r1, [Bank:r2]    |   7
+ 0x9e  | Indexed   | [Bank:r1], Const |   8
+ 0xbe  | Absolute  | [Addr], r1       |   8
+ 0xde  | Absolute  | r1, [Addr]       |   8
+ 0xfe  | Absolute  | [Addr], Const    |   9
+
+
+==== DVS - Signed Divide ====
+- Do the same as DIV, but treat operands as signed integers.
+
+== Status Register ==
+Carry Flag       | Always cleared
+Zero Flag        | Set if quocient is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Undefined
+Sign Flag        | Set if the quocient is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x1f  | Register  | r1, r2           |   6
+ 0x3f  | Immediate | r1, Const        |   7
+ 0x5f  | Indexed   | [Bank:r1], r2    |   7
+ 0x7f  | Indexed   | r1, [Bank:r2]    |   7
+ 0x9f  | Indexed   | [Bank:r1], Const |   8
+ 0xbf  | Absolute  | [Addr], r1       |   8
+ 0xdf  | Absolute  | r1, [Addr]       |   8
+ 0xff  | Absolute  | [Addr], Const    |   9
+
+
+==== HLT - Halt/Wait ====
+- Set CPU in a Wait state until a Interrupt Request is triggerred.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Not affected
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Not affected
+
+== Encoding ==
+Opcode | Addr Mode | Operand | Cycles
+ 0x01  | Implied   | ------- |   1
+ 0xe1  | Implied   | ------- |   1
+
+
+==== INC - Increment ====
+- Increment D1 by 1.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if the result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand   | Cycles
+ 0x22  | Register  | r1        |   2
+ 0x62  | Absolute  | [Addr]    |   4
+ 0x82  | Indexed   | [Bank:r1] |   4
+
+
+==== IOR - Logical Inclusive OR ====
+- Perform a inclusive OR operation, bit a bit, on D1 using the D2 contents.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if the result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x12  | Register  | r1, r2           |   3
+ 0x32  | Immediate | r1, Const        |   4
+ 0x52  | Indexed   | [Bank:r1], r2    |   4
+ 0x72  | Indexed   | r1, [Bank:r2]    |   4
+ 0x92  | Indexed   | [Bank:r1], Const |   5
+ 0xb2  | Absolute  | [Addr], r1       |   5
+ 0xd2  | Absolute  | r1, [Addr]       |   5
+ 0xf2  | Absolute  | [Addr], Const    |   6
+
+
+==== JMP - Jump Unconditionally ====
+- Set the Program Counter to the target memory address.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Not affected
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Not affected
+
+== Encoding ==
+Opcode | Addr Mode | Operand   | Cycles
+ 0x6c  | Absolute  | [Addr]    |   5
+ 0x8c  | Indexed   | [Bank:r1] |   5
+
+
+==== JSR - Jump to Subroutine ====
+- Pushes the Program Counter (minus one) onto the Stack. Then set the
+Program Counter to the target memory address.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Not affected
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Not affected
+
+== Encoding ==
+Opcode | Addr Mode | Operand   | Cycles
+ 0x6d  | Absolute  | [Addr]    |   6
+ 0x8d  | Indexed   | [Bank:r1] |   6
+
+
+==== MLS - Signed Multiply ====
+- Do the same as MUL, but treat operands as signed integers.
+
+== Status Register ==
+Carry Flag       | Set if upper word was pushed into the Stack
+Zero Flag        | Set if product is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Set if the upper word is Negative
+Sign Flag        | Set if the lower word is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x1d  | Register  | r1, r2           |   6
+ 0x3d  | Immediate | r1, Const        |   7
+ 0x5d  | Indexed   | [Bank:r1], r2    |   7
+ 0x7d  | Indexed   | r1, [Bank:r2]    |   7
+ 0x9d  | Indexed   | [Bank:r1], Const |   8
+ 0xbd  | Absolute  | [Addr], r1       |   8
+ 0xdd  | Absolute  | r1, [Addr]       |   8
+ 0xfd  | Absolute  | [Addr], Const    |   9
+
+
+==== MOV - Move ====
+- Copy content of D2 into D1.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if D2 is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if D2 is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x10  | Register  | r1, r2           |   3
+ 0x30  | Immediate | r1, Const        |   4
+ 0x50  | Indexed   | [Bank:r1], r2    |   4
+ 0x70  | Indexed   | r1, [Bank:r2]    |   4
+ 0x90  | Indexed   | [Bank:r1], Const |   5
+ 0xb0  | Absolute  | [Addr], r1       |   5
+ 0xd0  | Absolute  | r1, [Addr]       |   5
+ 0xf0  | Absolute  | [Addr], Const    |   6
+
+
+==== MUL - Unsigned Multiply ====
+- Multiply D1 by D2, store the Low Word of product in D1 and push the High
+Word onto the Stack. The High Word is only pushed if the Carry Flag was set.
+
+== Status Register ==
+Carry Flag       | Set if High Word was pushed onto the Stack
+Zero Flag        | Set if product is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Set if the High Word is Negative
+Sign Flag        | Set if the Low Word is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x1c  | Register  | r1, r2           |   6
+ 0x3c  | Immediate | r1, Const        |   7
+ 0x5c  | Indexed   | [Bank:r1], r2    |   7
+ 0x7c  | Indexed   | r1, [Bank:r2]    |   7
+ 0x9c  | Indexed   | [Bank:r1], Const |   8
+ 0xbc  | Absolute  | [Addr], r1       |   8
+ 0xdc  | Absolute  | r1, [Addr]       |   8
+ 0xfc  | Absolute  | [Addr], Const    |   9
+
+
+==== NOP - No Operation ====
+- Do nothing, and wait for the next cycle.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Not affected
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Not affected
+
+== Encoding ==
+Opcode | Addr Mode | Operand | Cycles
+ 0x00  | Implied   | ------- |   1
+ 0xe0  | Implied   | ------- |   1
+
+
+==== NOT - Logical NOT ====
+- Perform a NOT operation, bit a bit, on D1 and store result in D1.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if the result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand   | Cycles
+ 0x24  | Register  | r1        |   2
+ 0x64  | Absolute  | [Addr]    |   4
+ 0x84  | Indexed   | [Bank:r1] |   4
+
+
+==== POP - Stack Pop ====
+- Pop 16 bit value from Stack, store it in D1 and decrement SP by 2.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if value is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if the value is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand   | Cycles
+ 0x27  | Register  | r1        |   3
+ 0x67  | Absolute  | [Addr]    |   5
+ 0x87  | Indexed   | [Bank:r1] |   5
+
+
+==== PSH - Stack Push ====
+- Increment Stack Pointer by 2, and Push a 16 bit copy of D1 onto Stack.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if value is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if the value is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand   | Cycles
+ 0x28  | Register  | r1        |   3
+ 0x48  | Immediate | Const     |   4
+ 0x68  | Absolute  | [Addr]    |   5
+ 0x88  | Indexed   | [Bank:r1] |   5
+
+
+==== RET - Return from Subroutine ====
+- Used at the end of a subroutine to return to the calling routine. It pops the
+Program Counter from the Stack.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Not affected
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Not affected
+
+== Encoding ==
+Opcode | Addr Mode | Operand | Cycles
+ 0x0e  | Implied   | ------- |   4
+ 0xee  | Implied   | ------- |   4
+
+
+==== ROL - Rotate to left ====
+- Move each D1 bits D2 times to the left. The rotation operation is circular
+in the sense that the bit shifted out at one end is shifted into the other end.
+
+== Status Register ==
+Carry Flag       | Set to the last bit rotated out
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x19  | Register  | r1, r2           |   4
+ 0x39  | Immediate | r1, Const        |   5
+ 0x59  | Indexed   | [Bank:r1], r2    |   5
+ 0x79  | Indexed   | r1, [Bank:r2]    |   5
+ 0x99  | Indexed   | [Bank:r1], Const |   6
+ 0xb9  | Absolute  | [Addr], r1       |   6
+ 0xd9  | Absolute  | r1, [Addr]       |   6
+ 0xf9  | Absolute  | [Addr], Const    |   7
+
+
+==== ROR - Rotate to right ====
+- Do the same as ROL, but rotate bits to the right.
+
+== Status Register ==
+Carry Flag       | Set to the last bit rotated out
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x1a  | Register  | r1, r2           |   4
+ 0x3a  | Immediate | r1, Const        |   5
+ 0x5a  | Indexed   | [Bank:r1], r2    |   5
+ 0x7a  | Indexed   | r1, [Bank:r2]    |   5
+ 0x9a  | Indexed   | [Bank:r1], Const |   6
+ 0xba  | Absolute  | [Addr], r1       |   6
+ 0xda  | Absolute  | r1, [Addr]       |   6
+ 0xfa  | Absolute  | [Addr], Const    |   7
+
+
+==== RTI - Return from Interrupt ====
+- Used at the end of a interrupt routine. It pops the Program Status,
+Program Counter from the Stack.
+
+== Status Register ==
+Carry Flag       | Set from Stack
+Zero Flag        | Set from Stack
+Ignore Interrupt | Set from Stack
+Overflow Flag    | Set from Stack
+Sign Flag        | Set from Stack
+
+== Encoding ==
+Opcode | Addr Mode | Operand | Cycles
+ 0x0f  | Implied   | ------- |   4
+ 0xef  | Implied   | ------- |   4
+
+
+==== SET - Set Flags ====
+- Set specified flags by D1 to 1.
+
+== Status Register ==
+Carry Flag       | Can be set
+Zero Flag        | Can be set
+Ignore Interrupt | Can be set
+Overflow Flag    | Can be set
+Sign Flag        | Can be set
+
+== Encoding ==
+Opcode | Addr Mode | Operand | Cycles
+ 0x46  | Immediate | Const   |   3
+
+
+==== SHL - Shift left ====
+- Move each D1 bits D2 times to the left.
+
+== Status Register ==
+Carry Flag       | Set to the last bit shifted out
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x17  | Register  | r1, r2           |   4
+ 0x37  | Immediate | r1, Const        |   5
+ 0x57  | Indexed   | [Bank:r1], r2    |   5
+ 0x77  | Indexed   | r1, [Bank:r2]    |   5
+ 0x97  | Indexed   | [Bank:r1], Const |   6
+ 0xb7  | Absolute  | [Addr], r1       |   6
+ 0xd7  | Absolute  | r1, [Addr]       |   6
+ 0xf7  | Absolute  | [Addr], Const    |   7
+
+
+==== SHR - Shift right ====
+- Move each D1 bits D2 times to the right.
+
+== Status Register ==
+Carry Flag       | Set to the last bit shifted out
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x18  | Register  | r1, r2           |   4
+ 0x38  | Immediate | r1, Const        |   5
+ 0x58  | Indexed   | [Bank:r1], r2    |   5
+ 0x78  | Indexed   | r1, [Bank:r2]    |   5
+ 0x98  | Indexed   | [Bank:r1], Const |   6
+ 0xb8  | Absolute  | [Addr], r1       |   6
+ 0xd8  | Absolute  | r1, [Addr]       |   6
+ 0xf8  | Absolute  | [Addr], Const    |   7
+
+
+==== SUB - Subtract with Carry ====
+- Subtract D1 and D2 with Carry bit, and store result in D1. The subtraction is done by
+adding the D1 and the NOT of D2 plus the Carry (D1 + (~D2) + C).
+
+== Status Register ==
+Carry Flag       | Set if overflow on 15th bit
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Set if bit sign is incorrect
+Sign Flag        | Set if the result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x16  | Register  | r1, r2           |   4
+ 0x36  | Immediate | r1, Const        |   5
+ 0x56  | Indexed   | [Bank:r1], r2    |   5
+ 0x76  | Indexed   | r1, [Bank:r2]    |   5
+ 0x96  | Indexed   | [Bank:r1], Const |   6
+ 0xb6  | Absolute  | [Addr], r1       |   6
+ 0xd6  | Absolute  | r1, [Addr]       |   6
+ 0xf6  | Absolute  | [Addr], Const    |   7
+
+
+==== TST - Test Bits ====
+- Test one or more bits at D2 location. The D1 bits are used as mask pattern
+and is ANDed with D2, the result is not kept.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if the result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Set to 14th bit of D2
+Sign Flag        | Set to 15th bit of D2
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x14  | Register  | r1, r2           |   3
+ 0x34  | Immediate | r1, Const        |   4
+ 0x54  | Indexed   | [Bank:r1], r2    |   4
+ 0x74  | Indexed   | r1, [Bank:r2]    |   4
+ 0x94  | Indexed   | [Bank:r1], Const |   5
+ 0xb4  | Absolute  | [Addr], r1       |   5
+ 0xd4  | Absolute  | r1, [Addr]       |   5
+ 0xf4  | Absolute  | [Addr], Const    |   6
+
+
+
+==== XOR - Logical Exclusive OR ====
+- Perform a exclusive OR operation, bit a bit, on D1 using the D2 contents.
+
+== Status Register ==
+Carry Flag       | Not affected
+Zero Flag        | Set if result is Zero
+Ignore Interrupt | Not affected
+Overflow Flag    | Not affected
+Sign Flag        | Set if the result is Negative
+
+== Encoding ==
+Opcode | Addr Mode | Operand          | Cycles
+ 0x13  | Register  | r1, r2           |   3
+ 0x33  | Immediate | r1, Const        |   4
+ 0x53  | Indexed   | [Bank:r1], r2    |   4
+ 0x73  | Indexed   | r1, [Bank:r2]    |   4
+ 0x93  | Indexed   | [Bank:r1], Const |   5
+ 0xb3  | Absolute  | [Addr], r1       |   5
+ 0xd3  | Absolute  | r1, [Addr]       |   5
+ 0xf3  | Absolute  | [Addr], Const    |   6

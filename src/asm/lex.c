@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdnoreturn.h>
 #include <string.h>
 
@@ -42,7 +43,7 @@ static_assert(
 	"Tokens array doesn't have the same size of Tokens Enum."
 );
 
-static inline bool isSpace(char c) {
+static inline bool is_space(char c) {
 	return c == '\t' || c == '\n' || c == ' ';
 }
 
@@ -62,7 +63,7 @@ static noreturn void error(Location loc, const char *fmt, ...) {
 	exit(EXIT_FAILURE);
 }
 
-static void appendBuffer(Lexer *lex, const char *buf, usize size) {
+static void append_buffer(Lexer *lex, const char *buf, usize size) {
 	if (lex->buflen + size >= lex->bufsize) {
 		lex->bufsize *= 2;
 		lex->buf = xrealloc(lex->buf, lex->bufsize);
@@ -73,12 +74,12 @@ static void appendBuffer(Lexer *lex, const char *buf, usize size) {
 	lex->buf[lex->buflen] = '\0';
 }
 
-static void clearBuffer(Lexer *lex) {
+static void clear_buffer(Lexer *lex) {
 	lex->buflen = 0;
 	lex->buf[0] = 0;
 }
 
-static void pushStack(Lexer *lex, char c, bool buffer) {
+static void push_stack(Lexer *lex, char c, bool buffer) {
 	assert(lex->stack[1] == CHAR_EOF);
 
 	lex->stack[1] = lex->stack[0];
@@ -90,7 +91,7 @@ static void pushStack(Lexer *lex, char c, bool buffer) {
 	}
 }
 
-static void updateLocation(Location *loc, char c) {
+static void update_location(Location *loc, char c) {
 	if (c == '\n') {
 		loc->lineno += 1;
 		loc->colno = 0;
@@ -110,7 +111,7 @@ static char next(Lexer *lex, Location *loc, bool buffer) {
 		lex->stack[1] = CHAR_EOF;
 	} else {
 		c = fgetc(lex->in);
-		updateLocation(&lex->location, c);
+		update_location(&lex->location, c);
 
 		if (feof(lex->in)) {
 			c = CHAR_EOF;
@@ -120,21 +121,21 @@ static char next(Lexer *lex, Location *loc, bool buffer) {
 	if (loc != NULL) {
 		*loc = lex->location;
 		for (usize i = 0; i < 2 && lex->stack[i] != CHAR_EOF; i += 1) {
-			updateLocation(&lex->location, lex->stack[i]);
+			update_location(&lex->location, lex->stack[i]);
 		}
 	}
 
 	if (buffer) {
-		appendBuffer(lex, &c, 1);
+		append_buffer(lex, &c, 1);
 	}
 
 	return c;
 }
 
-static char getCharacter(Lexer *lex, Location *loc) {
+static char get_character(Lexer *lex, Location *loc) {
 	char c = next(lex, loc, false);
 
-	while (c != CHAR_EOF && isSpace(c)) {
+	while (c != CHAR_EOF && is_space(c)) {
 		c = next(lex, loc, false);
 	}
 
@@ -189,10 +190,10 @@ static void literal(Lexer *lex, Token *out) {
 		error(out->location, "Integer constant overflow");
 	}
 
-	clearBuffer(lex);
+	clear_buffer(lex);
 }
 
-static int keywordCompare(const void *v1, const void *v2) {
+static int keyword_cmp(const void *v1, const void *v2) {
 
 	return strcmp(*(const char **)v1, *(const char **)v2);
 }
@@ -203,7 +204,7 @@ static TokenType keyword(Lexer *lex, Token *out) {
 
 	while (c != CHAR_EOF) {
 		if (!isalpha(c) && c != '_') {
-			pushStack(lex, c, true);
+			push_stack(lex, c, true);
 			break;
 		}
 		c = next(lex, NULL, true);
@@ -213,14 +214,16 @@ static TokenType keyword(Lexer *lex, Token *out) {
 	char *buf = xstrndup(lex->buf, lex->buflen);
 	strntolower(buf, lex->buflen);
 
-	void *token = bsearch(&buf, tokens, TOK_LAST_KEYWORD + 1, sizeof(tokens[0]), keywordCompare);
+	void *token = bsearch(
+		&buf, tokens, TOK_LAST_KEYWORD + 1, sizeof(tokens[0]), keyword_cmp
+	);
 	if (token == NULL) {
 		error(out->location, "Unknown keyword %s", lex->buf);
 	}
 
 	out->type = (const char **)token - tokens;
 
-	clearBuffer(lex);
+	clear_buffer(lex);
 	free(buf);
 	return out->type;
 }
@@ -232,10 +235,10 @@ static TokenType comment(Lexer *lex, Token *out) {
 		c = next(lex, NULL, false);
 	}
 
-	return lexScan(lex, out);
+	return lex_scan(lex, out);
 }
 
-void lexInit(Lexer *lex, FILE *in, usize fileid) {
+void lex_init(Lexer *lex, FILE *in, usize fileid) {
 	memset(lex, 0, sizeof(*lex));
 
 	lex->in = in;
@@ -250,13 +253,13 @@ void lexInit(Lexer *lex, FILE *in, usize fileid) {
 	lex->location.colno = 1;
 }
 
-void lexQuit(Lexer *lex) {
+void lex_quit(Lexer *lex) {
 	fclose(lex->in); /* NOLINT(cert-err33-c) */
 	free(lex->buf);
 }
 
-TokenType lexScan(Lexer *lex, Token *out) {
-	char c = getCharacter(lex, &out->location);
+TokenType lex_scan(Lexer *lex, Token *out) {
+	char c = get_character(lex, &out->location);
 
 	if (c == CHAR_EOF) {
 		out->type = TOK_EOF;
@@ -264,13 +267,13 @@ TokenType lexScan(Lexer *lex, Token *out) {
 	}
 
 	if (isdigit(c)) {
-		pushStack(lex, c, false);
+		push_stack(lex, c, false);
 		literal(lex, out);
 		return TOK_LITERAL;
 	}
 
 	if (isalpha(c) || c == '_') {
-		pushStack(lex, c, false);
+		push_stack(lex, c, false);
 		return keyword(lex, out);
 	}
 
@@ -301,8 +304,8 @@ TokenType lexScan(Lexer *lex, Token *out) {
 	default:
 		/* NOLINTBEGIN(cert-err33-c) */
 		fprintf(
-			stderr, "%zd - %zd:%zd: Syntax Error: Unexpected character\n", lex->location.fileid, lex->location.lineno,
-			lex->location.colno
+			stderr, "%zd - %zd:%zd: Syntax Error: Unexpected character\n",
+			lex->location.fileid, lex->location.lineno, lex->location.colno
 		);
 		/* NOLINTEND(cert-err33-c) */
 

@@ -3,7 +3,7 @@ Language: Cpp
 IndentWidth: 4
 TabWidth: 4
 AccessModifierOffset: -4
-ColumnLimit: 120
+ColumnLimit: 90
 UseTab: AlignWithSpaces
 UseCRLF: false
 #ContinuationIndentWidth: 4

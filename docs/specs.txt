@@ -9,100 +9,139 @@
 - Endianess: Little-Endian.
 
 ======== Instruction Layout ========
-Usage: <mnemonic> [operands]
-Encoding: RRRRRRAA-AAIIIIII
- Bit  | Symbol | Name               | Size
-00-05 |   I    | Opcode Identifier  | 6
-06-09 |   A    | Address Mode       | 4
-10-15 |   R    | Register Selection | 6
+Encoding: RRRRRRRR-AAAGIIII
+ Bit  | Symbol | Name              | Size
+00-03 |   I    | Opcode Identifier | 4
+04-04 |   G    | Group Index       | 1
+05-07 |   A    | Address Mode      | 3
+08-15 |   R    | Register Selector | 8
 
 ======== Instructions ========
-Code | Mnemonic | Operation   | Cycles^ | Flags
-0x00 |   MOV    | A = B       |    1    | NZ
-0x01 |   ADD    | A += B + C  |    2    | OCNZ
-0x02 |   SUB    | A += ~B + C |    2    | OCNZ
-0x03 |   INC    | A += 1      |    1    | NZ
-0x04 |   DEC    | A -= 1      |    1    | NZ
-0x05 |   MUL    | A *= B      |    3    | OCNZ
-0x06 |   DIV**  | A /= B      |    3    | OCNZ
 
-* Note: See opcodes.txt for the Instructions codes with each address mode.
-** Division by zero always produce the result of 0xffff, and a remainder that
-is equal to the dividend.
+==== Group - 0 ====
+ Code  | Mnemonic | Operation                      | Flags | Cycles^
+0b0000 |   NOP    | Do nothing for a cycle         | ----- |   1
+0b0001 |   HLT    | Wait for next interrupt        | ----- |   1
+0b0010 |   INC    | D1 += 1                        | S--Z- |   1
+0b0011 |   DEC    | D1 -= 1                        | S--Z- |   1
+0b0100 |   NOT    | D1 = ~D1                       | S--Z- |   1
+0b0101 |   CLR    | ST &= ~D1                      | SOIZC |   1
+0b0110 |   SET    | ST |= D1                       | SOIZC |   1
+0b0111 |   POP    | D1 = StackTop; SP -= 2         | S--Z- |   2
+0b1000 |   PSH    | SP += 2; StackTop = D1         | S--Z- |   2
+0b1001 |   BIF    | PC += O if (ST & D1) == D1     | ----- |   2
+0b1010 |   BNF    | PC += O if not (ST & D1)       | ----- |   2
+0b1011 |   BRA    | PC += O                        | ----- |   2
+0b1100 |   JMP    | PC = A                         | ----- |   2
+0b1101 |   JSR    | Push HPC; Push LPC; PC = A     | ----- |   3
+0b1110 |   RET    | LPC = Pop; HPC = Pop           | ----- |   3
+0b1111 |   RTI    | LPC = Pop; HPC = Pop; ST = Pop | SOIZC |   3
+
+==== Group - 1 ====
+ Code  | Mnemonic | Operation                | Flags | Cycles^
+0b0000 |   MOV    | D1 = D2                  | S--Z- |   1
+0b0001 |   AND    | D1 &= D2                 | S--Z- |   1
+0b0010 |   IOR    | D1 |= D2                 | S--Z- |   1
+0b0011 |   XOR    | D1 ^= D2                 | S--Z- |   1
+0b0100 |   TST    | D1 * D2                  | SO-Z- |   1
+0b0101 |   ADD    | D1 += D2 + C             | SO-ZC |   2
+0b0110 |   SUB    | D1 += ~D2 + C            | SO-ZC |   2
+0b0111 |   SHL    | D1 <<= D2                | S--ZC |   2
+0b1000 |   SHR    | D1 >>= D2                | S--ZC |   2
+0b1001 |   ROL    | Rotate D1 left D2 times  | S--ZC |   2
+0b1010 |   ROR    | Rotate D1 right D2 times | S--ZC |   2
+0b1011 |   CMP    | D1 - D2                  | S--ZC |   2
+0b1100 |   MUL    | D1 *= D2                 | SO-ZC |   4
+0b1101 |   MLS    | Signed D1 *= Signed D2   | SO-ZC |   4
+0b1110 |   DIV    | D1 /= D2                 | S*-ZC |   4
+0b1111 |   DVS    | Signed D1 /= Signed D2   | S*-ZC |   4
+
+- Note: See opcodes.txt for instructions documentation.
 
 ======== Registers ========
-Description: Registers can be accessed as operands. There are 8 possible 16-bit
-wide registers, provided by the selector. The first and the second 3 bits of
-the selector specify the first and second Registers respectively. Making
-possible the selection of 64 combinations.
 
- Bit  | Register | Usage            \   Bit  | Register | Usage
-0b000 |    rA    | General Purpose  /  0b100 |    rX    | General Purpose
-0b001 |    rB    | General Purpose  \  0b101 |    rY    | General Purpose
-0b010 |    rC    | General Purpose  /  0b110 |    rZ    | General Purpose*
-0b011 |    PC    | Program Counter  \  0b111 |    SP    | Stack Pointer
+==== General Purpose ====
+Description: Registers can be accessed as operands. There are 16 possible
+16-bit wide registers, provided by the selector. The low and the high Nibble of
+the selector specify the first and second Registers respectively.
+Making possible the selection of 256 combinations.
 
-* Note: rZ register will be used by the MUL instructions to store the high
-16-bis of the result.
+ Code  | Register \   Code  | Register
+0b0000 |    r0    /  0b1000 |    rA
+0b0001 |    r1    \  0b1001 |    rB
+0b0010 |    r2    /  0b1010 |    rC
+0b0011 |    r3    \  0b1011 |    rD
+0b0100 |    r4    /  0b1100 |    rE
+0b0101 |    r5    \  0b1101 |    rF
+0b0110 |    r6    /  0b1110 |    rX/LSP*
+0b0111 |    r7    \  0b1111 |    rY/HSP*
 
-* Example: "MOV rX, rZ"
-	The selector will be read as 110100.
+- Example: "MOV r3, rF"
+	The selector will be read as 11010011.
 
-======== Internal Registers ========
-Description: Registers cannot be accessed as operands. The CPU has 8-bit wide
-internal registers. Those registers tracks the internal state of the CPU, which
-can only be accessed by instructions.
+* The rX and rY registers are mirrors to the Stack Pointer internal register.
 
- Register |      Name      | Usage
-    PB    |  Program Bank  | Keeps track of the current bank for the
-          |                | executed instruction.
-    DB    |   Data Bank    | When an address is provided, the CPU stores
-          |                | the first byte on this register.
-    PS    | Program Status | Stores CPU status, an instruction can set or read
-          |   (---IOCNZ)   | any flag.
+==== Internal ====
+Description: Registers cannot be accessed as operands. Those registers tracks
+the internal state of the CPU, which can only be accessed by instructions.
 
-* Description for each Program Status Flag:
-- Zero(Z): Set if the result of the last operation is 0x00.
-- Negative(N): Set if the result of the last operations has set the
-15th bit to one.
-- Carry(C): Set if the result of the last operation caused an overflow from the
-15th bit or an underflow on bit 0.
-- Overflow/Underflow(O): Set if the last signed binary operation
-overflow/underflow (e.g. Adding positive numbers and ending up with
-negative result: 32767 + 1 = -32768).
-- Disable Interrupt(I): If set, the processor will ignore devices interrupts
-requests(IRQ).
+== Registers ==
+ Register | Name            | Size
+    ST*   | Program Status  | u16
+    PC    | Program Counter | u32
+    SP    | Stack Pointer   | u32
+
+= Program Status(ST) : SO------ -----IZC =
+Flag | Name             | Description
+ C   | Carry Flag       | Operation caused over/underflow on bit 15 or 0.
+ Z   | Zero Flag        | Operation result is 0.
+ I   | Ignore Interrupt | If set, the processor will ignore interrupt requests.
+ O   | Overflow Flag    | Result has wrong bit sign. (e.g. 32767 + 1 = -32768)
+ S   | Sign Flag        | Result has set the 15th bit.
 
 ======== Address Modes ========
-Hex  | Name      | Operand       | Cycles^ \  Hex  | Name     | Operand          | Cycles^
-0x00 | Implied   | No Operand    |   0     /  0x08 | Absolute | r1, [Addr]       |   2
-0x01 | Relative  | Offset        |   1     \  0x09 | Banked   | [Bank:r1]        |   2
-0x02 | Immediate | r1, Const     |   2     /  0x0a | Banked   | [Bank:r1], Const |   3
-0x03 | Register  | r1            |   1     \  0x0b | Banked   | [Bank:r1], r2    |   3
-0x04 | Register  | r1, r2        |   2     /  0x0c | Banked   | r1, [Bank:r2]    |   3
-0x05 | Absolute  | [Addr]        |   1     \  0x0d | Indexed  | [Addr:r1]        |   3
-0x06 | Absolute  | [Addr], Const |   2     /  0x0e | Indexed  | [Addr:r1], r2    |   4
-0x07 | Absolute  | [Addr], r1    |   2     \  0x0f | Indexed  | r1, [Addr:r2]    |   4
 
-* Bank   - u8
-* Const  - u16
-* Addr   - u24
-* Offset - s16
+==== Group - 0 ====
+ Code | Name      | Operand | Cycles^ \   Code | Name     | Operand         | Cycles^
+0b000 | Implied   | ------- |   0     /  0b100 | Indexed  | [Bank:r1]       |   3
+0b001 | Register  | r1      |   1     \  0b101 | Relative | (Offset)        |   2
+0b010 | Immediate | Const   |   2     /  0b110 | Relative | (Offset), Const |   4
+0b011 | Absolute  | [Addr]  |   3     \  0b111 | Implied  | --------------- |   0
+
+==== Group - 1 ====
+ Code | Name      | Operand       | Cycles^ \   Code | Name     | Operand          | Cycles^
+0b000 | Register  | r1, r2        |   2     /  0b100 | Indexed  | [Bank:r1], Const |   4
+0b001 | Immediate | r1, Const     |   3     \  0b101 | Absolute | [Addr], r1       |   4
+0b010 | Indexed   | [Bank:r1], r2 |   3     /  0b110 | Absolute | r1, [Addr]       |   4
+0b011 | Indexed   | r1, [Bank:r2] |   3     \  0b111 | Absolute | [Addr], Const    |   5
+
+* Bank   - u16 : High byte must be 0x00.
+* Const  - u16 : Any value.
+* Offset - s16 : From -32768 to +32767.
+* Addr   - u32 : Last byte must be 0x00.
 
 ======== Memory Layout ========
       Range        | Name
-0x000000..0x1fffff | RESERVED
-0x200000..0x3fffff | General Purpose RAM
-0x400000..0x40000f | Interrupt Vectors
-0x400010..0xffffff | General Purpose ROM
+0x000000..0x2fffff | General Purpose RAM
+0x300000..0x3fffff | System Usage/MMIO Registers
+0x400000..0xffffff | General Purpose ROM
 
-* Is recommended to use the address range 0x3d0000 to 0x3fffff as Stack Memory.
+==== System Vectors ====
+Description: The ROM memory range 0xffff00 to 0xffffff is dedicated to
+Interrupt vectors.
 
-======== Interrupt Vectors ========
- Address |  Name    | Description            | Cycles^
-0x400000 | Reset    | PowerUp/Reset          |   8
-0x400003 | IRQ      | Interrupt Request      |   7
-0x400006 | NMI      | Non-Maskable Interrupt |   7
+== Vectors Table ==
+ Range  | Name
+0x00-e3 | Unused
+0xe4-e7 | Illegal Address
+0xe8-eb | Illegal Instruction
+0xec-ef | Division by Zero
+0xf0-f3 | Hardware NMI
+0xf4-f7 | Hardware IRQ
+0xf8-fb | Reset
+0xfc-ff | Stack Address
+
+- Note: See vectors.txt for detailed documentation.
 
 ===============================================================
 ^ All cycles are arbitrary for now, there's no way real hardware could have

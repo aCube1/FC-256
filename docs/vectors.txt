@@ -1,0 +1,56 @@
+======== IRQ's, Exceptions and System Vectors ========
+When a interrupt is requested, the CPU does the following steps:
+- Wait instruction finishes executing.
+- (IRQ) Checks if I flag is set, otherwise continue the IRQ.
+- (Illegal Instruction) Increment PC by 2.
+- (Illegal Address) Ignore last byte.
+- Pushes the Low Word of Program Counter onto the Stack.
+- Pushes the High Word of Program Counter onto the Stack.
+- Pushes the Program Status onto the Stack.
+- (IRQ/NMI) Set I flag to prevent interruption of current Interrupt Request.
+- Read High PC from Vector Address, but set the High Byte to 0x00.
+- Read Low PC from Vector Address.
+
+
+==== 0x00-e3: Unused ====
+- Currently unused. Users should not use this address range.
+- The CPU should NEVER read this memory area (even if it can).
+
+
+==== 0xe4-e7: Illegal Address
+- Triggered when an attempt to access an address larger than 24-bits is made.
+- The last byte from accessed address is always ignored.
+- Takes 7 cycles to complete.
+
+
+==== 0xe8-eb: Illegal Instruction ====
+- Triggered when a undocumented/illegal instruction is executed.
+- Takes 7 cycles to complete.
+
+
+==== 0xec-ef: Division by Zero ====
+- Triggered by DIV and DVS instructions when an attempt of Division by
+Zero is performed.
+- Takes 6 cycles to complete.
+
+
+==== 0xf0-f3: Hardware NMI ====
+- Triggered by a Hardware Request.
+- Takes 8 cycles to complete.
+
+
+==== 0xf4-f7: Hardware IRQ ====
+- Triggered by a Hardware Request, and can be ignored if the Flag I of
+Program Status is set.
+- Takes 9 cycles to complete.
+
+
+==== 0xf8-fb: Reset ====
+- Triggered when the CPU hard/soft reset.
+- When triggered, set the Program Counter, read and store Stack Address at the
+Stack Pointer register, clears Program Status and set Ignore Interrupts flag.
+- Takes 6 cycles to complete.
+
+
+==== 0xfc-ff: Stack Address  ====
+- Contains the default stack address at the cpu reset.

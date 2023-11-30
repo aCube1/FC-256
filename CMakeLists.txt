@@ -16,23 +16,19 @@ target_compile_features(
 target_sources(
 	${PROJECT_NAME}
 	PRIVATE
-		src/asm/lex.c
-		src/emu/opcode.c
-		src/emu/operand.c
-		src/emu/cpu.c
-		src/log/log.c
-		src/common.c
-		src/main.c
-
-)
-
-target_precompile_headers(
-	${PROJECT_NAME}
-	PRIVATE
-		include/emu/operand.h
-		include/log/log.h
+		include/asm/lex.h
+		include/asm/token.h
+		include/emu/cpu.h
+		include/emu/opcode.h
 		include/common.h
 		include/types.h
+
+		src/asm/lex.c
+		src/emu/cpu.c
+		src/emu/opcode.c
+		src/log.c
+		src/common.c
+		src/main.c
 )
 
 target_include_directories(
