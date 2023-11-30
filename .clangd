@@ -6,7 +6,8 @@ Diagnostics:
       'performance-*', 'readability-*', 'modernize-*'
     ]
     Remove: [
+      'misc-no-recursion'
       'readability-magic-numbers',
       'readability-identifier-length',
-      'readability-implicit-bool-conversion'
+      'readability-implicit-bool-conversion',
     ]
