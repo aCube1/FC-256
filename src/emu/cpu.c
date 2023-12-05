@@ -2,13 +2,36 @@
 
 #include "common.h"
 #include "emu/opcode.h"
+#include "log.h"
 
+#include <stdio.h>
 #include <string.h>
 
-void cpu_powerup(Cpu *cpu) {
+/* NOTE: ROM has a maximum size of 12MiB */
+#define MAX_ROM_SIZE 12582912u
+#define ROM_START    0x400000
+
+void cpu_powerup(Cpu *cpu, const char *romfile) {
+	FILE *rom = xfopen(romfile, "rb");
+
+	/* FIXME: I think this is not portable */
+	fseek(rom, 0L, SEEK_END);
+	usize rom_size = ftell(rom);
+	rewind(rom);
+
+	if (rom_size > MAX_ROM_SIZE) {
+		log_fatal("Rom is larger than 12MiB.");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Only allocate RAM if there's no RAM already allocated */
 	if (cpu->ram == NULL) {
 		cpu->ram = xcalloc(RAM_SIZE, sizeof(u8));
 	}
+
+	fread(cpu->ram + ROM_START, sizeof(u8), rom_size, rom);
+	fclose(rom);
+	log_info("Readed %d KiB from %s", rom_size / 1024, romfile);
 
 	memset(cpu->regs, 0, sizeof(u16) * REG_COUNT);
 }

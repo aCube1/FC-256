@@ -33,3 +33,13 @@ void *xrealloc(void *ptr, size_t size) {
 
 	return ptr;
 }
+
+FILE *xfopen(const char *filename, const char *mode) {
+	FILE *file = fopen(filename, mode);
+	if (file == NULL) {
+		log_fatal("Unable to open file: %s", filename);
+		exit(EXIT_FAILURE);
+	}
+
+	return file;
+}

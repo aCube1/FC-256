@@ -18,6 +18,7 @@ enum SystemVectors {
 	VEC_STACK = 0xfc,   /* 0xfc-ff: Stack Address */
 };
 
+/* ST -> SO-- ---- ---- -IZC */
 enum ProgramStatus {
 	ST_CARRY = 0,
 	ST_ZERO = 1,
@@ -50,7 +51,7 @@ typedef struct Cpu {
 	u8 *ram;
 	u16 regs[REG_COUNT];
 
-	u16 status; /* SO------ -----IZC */
+	u16 status;
 	u32 program_counter;
 	u32 stack_pointer;
 
@@ -68,7 +69,7 @@ typedef struct Cpu {
 	u8 next_interrupt;
 } Cpu;
 
-void cpu_powerup(Cpu *cpu);
+void cpu_powerup(Cpu *cpu, const char *romfile);
 void cpu_shutdown(Cpu *cpu);
 
 void cpu_reset(Cpu *cpu);

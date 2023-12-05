@@ -1,16 +1,21 @@
 #include "emu/cpu.h"
+#include "emu/opcode.h"
 #include "log.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #define DEBUG_BUF_SIZE 1024
 
+static char debug_buf[DEBUG_BUF_SIZE] = { 0 };
+
 void cpu_debug(Cpu *cpu) {
-	char buf[DEBUG_BUF_SIZE] = { 0 };
+	Opcode opcode = op_table[cpu->current_opcode & 0x00ff];
+	u16 data = cpu->operand.src;
 
 	/* NOLINTNEXTLINE(cert-err33-c) */
 	snprintf(
-		buf, DEBUG_BUF_SIZE,
+		debug_buf, DEBUG_BUF_SIZE,
 		"\tr0-r3 -> %#x | %#x | %#x | %#x \n"
 		"\tr4-r7 -> %#x | %#x | %#x | %#x \n"
 		"\trA-rD -> %#x | %#x | %#x | %#x \n"
@@ -21,18 +26,36 @@ void cpu_debug(Cpu *cpu) {
 		cpu->regs[REG_E], cpu->regs[REG_F], cpu->regs[REG_X], cpu->regs[REG_Y]
 	);
 
-	log_debug("PC -> %#x | SP -> %#x\n%s", cpu->program_counter, cpu->stack_pointer, buf);
+	log_debug(
+		"PC: %#x | SP: %#x | ST: %#x -> %s %#x\n"
+		"%s\n"
+		"================",
+		cpu->program_counter, cpu->stack_pointer, cpu->status, opcode.name, data,
+		debug_buf
+	);
 }
 
-int main(void) {
-	Cpu cpu;
-	cpu_powerup(&cpu);
-	ram_write16(&cpu, VECTOR_ADDR | VEC_STACK, 0x0000);
-	ram_write16(&cpu, VECTOR_ADDR | VEC_STACK + 2, 0x0020);
+int main(int argc, char *argv[]) {
+	if (argc < 2) {
+		log_info("usage: ./%s <rom.fc>", argv[0]);
+		return EXIT_FAILURE;
+	}
 
+	Cpu cpu;
+	cpu_powerup(&cpu, argv[1]);
 	cpu_reset(&cpu);
 
-	cpu_debug(&cpu);
+	char c = '\0';
+	while (c != 'q') {
+		c = getchar();
+
+		switch (c) {
+		case '\n':
+			cpu_step(&cpu);
+			cpu_debug(&cpu);
+			break;
+		}
+	}
 
 	cpu_shutdown(&cpu);
 	return EXIT_SUCCESS;
