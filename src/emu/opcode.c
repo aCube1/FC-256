@@ -93,16 +93,16 @@ const Opcode op_table[OPCODE_COUNT] = {
 	{ "DVS", op_dvs, addr_abs, 3, 9 },
 }; /* clang-format on */
 
-static inline void set_signzero(Cpu *cpu, u32 data) {
+static void set_signzero(Cpu *cpu, u32 data) {
 	bit_set(&cpu->status, ST_ZERO, data == 0);
 	bit_set(&cpu->status, ST_SIGN, data & 0x8000);
 }
 
-static inline void set_carry(Cpu *cpu, u32 data) {
+static void set_carry(Cpu *cpu, u32 data) {
 	bit_set(&cpu->status, ST_CARRY, data > 0xffff);
 }
 
-static inline void set_overflow(Cpu *cpu, u32 data1, u32 data2, u32 result) {
+static void set_overflow(Cpu *cpu, u32 data1, u32 data2, u32 result) {
 	bool has_overflow = (data1 ^ result) & (data2 ^ result) & 0x8000 != 0;
 	bit_set(&cpu->status, ST_OVERFLOW, has_overflow);
 }
@@ -125,12 +125,11 @@ static void operand_write(Cpu *cpu, u16 data) {
 
 void opcode_execute(Cpu *cpu) {
 	Opcode current = op_table[cpu->current_opcode & 0x00ff];
-	if (current.handler == NULL) {
-		log_fatal("Opcode '%#x' doesn't have a handler!", cpu->current_opcode);
-		exit(EXIT_FAILURE);
+
+	if (current.addr != NULL) {
+		current.addr(cpu, current.addr_mode);
 	}
 
-	current.addr(cpu, current.addr_mode);
 	current.handler(cpu);
 
 	cpu->cycles += current.cycles;
@@ -138,10 +137,10 @@ void opcode_execute(Cpu *cpu) {
 
 void addr_reg(Cpu *cpu, u8 mode) {
 	if (mode == 0) { /* r1, r2 */
-		cpu->operand.src = cpu->current_opcode & 0xf000;
+		cpu->operand.src = cpu->regs[bit_getn(cpu->current_opcode, 12, 0xf)];
 	}
 
-	cpu->operand.dest = cpu->current_opcode & 0x0f00;
+	cpu->operand.dest = bit_getn(cpu->current_opcode, 8, 0xf);
 	cpu->operand.is_addr = false;
 }
 
@@ -150,14 +149,14 @@ void addr_imm(Cpu *cpu, u8 mode) {
 	cpu->program_counter += 2;
 
 	if (mode == 0) { /* r1, Const */
-		cpu->operand.dest = cpu->current_opcode & 0x0f00;
+		cpu->operand.dest = (cpu->current_opcode & 0x0f00) >> 8;
 		cpu->operand.is_addr = false;
 	}
 }
 
 void addr_ind(Cpu *cpu, u8 mode) {
-	u8 dest = cpu->current_opcode & 0x0f00;
-	u8 src = cpu->current_opcode & 0xf000;
+	u8 dest = bit_getn(cpu->current_opcode, 8, 0xf);
+	u8 src = bit_getn(cpu->current_opcode, 12, 0xf);
 
 	u16 bank = ram_read16(cpu, cpu->program_counter);
 	cpu->program_counter += 2;
@@ -192,7 +191,7 @@ void addr_ind(Cpu *cpu, u8 mode) {
 }
 
 void addr_rel(Cpu *cpu, u8 mode) {
-	cpu->operand.offset = ram_read16(cpu, cpu->program_counter);
+	cpu->operand.dest = ram_read16(cpu, cpu->program_counter);
 	cpu->program_counter += 2;
 
 	if (mode == 0) { /* (Offset), Const */
@@ -207,14 +206,14 @@ void addr_abs(Cpu *cpu, u8 mode) {
 
 	switch (mode) {
 	case 0: /* [Addr], r1 */
-		cpu->operand.src = cpu->current_opcode & 0x0f00;
+		cpu->operand.src = bit_getn(cpu->current_opcode, 8, 0xf);
 		cpu->operand.dest = addr;
 		cpu->operand.is_addr = true;
 
 		break;
 	case 1: /* r1, [Addr] */
 		cpu->operand.src = ram_read16(cpu, addr);
-		cpu->operand.dest = cpu->current_opcode & 0x0f00;
+		cpu->operand.dest = bit_getn(cpu->current_opcode, 12, 0xf);
 		cpu->operand.is_addr = false;
 
 		break;
@@ -254,22 +253,22 @@ void op_and(Cpu *cpu) {
 
 void op_bif(Cpu *cpu) {
 	if ((cpu->status & cpu->operand.src) == cpu->operand.src) {
-		cpu->program_counter += cpu->operand.offset;
+		cpu->program_counter += (s16)cpu->operand.dest;
 	}
 }
 
 void op_bnf(Cpu *cpu) {
 	if ((cpu->status & cpu->operand.src) == 0x0) {
-		cpu->program_counter += cpu->operand.offset;
+		cpu->program_counter += (s16)cpu->operand.dest;
 	}
 }
 
 void op_bra(Cpu *cpu) {
-	cpu->program_counter += cpu->operand.offset;
+	cpu->program_counter += (s16)cpu->operand.dest;
 }
 
 void op_clr(Cpu *cpu) {
-	cpu->status |= cpu->operand.src;
+	cpu->status &= ~cpu->operand.src;
 }
 
 void op_cmp(Cpu *cpu) {
@@ -320,7 +319,9 @@ void op_mls(Cpu *cpu) {
 }
 
 void op_mov(Cpu *cpu) {
-	(void)cpu;
+	operand_write(cpu, cpu->operand.src);
+
+	set_signzero(cpu, cpu->operand.src);
 }
 
 void op_mul(Cpu *cpu) {

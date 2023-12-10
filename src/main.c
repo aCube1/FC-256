@@ -27,11 +27,8 @@ void cpu_debug(Cpu *cpu) {
 	);
 
 	log_debug(
-		"PC: %#x | SP: %#x | ST: %#x -> %s %#x\n"
-		"%s\n"
-		"================",
-		cpu->program_counter, cpu->stack_pointer, cpu->status, opcode.name, data,
-		debug_buf
+		"PC: %#x | SP: %#x | ST: %#x -> %s %#x\n%s", cpu->program_counter,
+		cpu->stack_pointer, cpu->status, opcode.name, data, debug_buf
 	);
 }
 
@@ -49,11 +46,9 @@ int main(int argc, char *argv[]) {
 	while (c != 'q') {
 		c = getchar();
 
-		switch (c) {
-		case '\n':
+		if (c == '\n') {
 			cpu_step(&cpu);
 			cpu_debug(&cpu);
-			break;
 		}
 	}
 

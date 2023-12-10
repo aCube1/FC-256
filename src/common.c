@@ -2,16 +2,16 @@
 
 #include "log.h"
 
-usize bit_getn(usize data, u8 pos, usize mask) {
-	return (data >> pos) & mask;
+usize bit_getn(usize data, u8 offset, usize mask) {
+	return (data >> offset) & mask;
 }
 
-usize bit_setn(usize data, u8 pos, usize mask, bool enable) {
+usize bit_setn(usize data, u8 offset, usize mask, bool enable) {
 	if (!enable) {
-		return data & ~(mask << pos);
+		return data & ~(mask << offset);
 	}
 
-	return data | (mask << pos);
+	return data | (mask << offset);
 }
 
 void *xcalloc(size_t count, size_t size) {

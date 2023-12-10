@@ -57,10 +57,9 @@ typedef struct Cpu {
 
 	/* Internal Private Data */
 	struct Operands {
-		s16 offset; /* Only used by Relative address modes */
 		u16 src;
-		u32 dest;
-		bool is_addr;
+		u32 dest;     /* Can be: Address, Register or Offset */
+		bool is_addr; /* Only set when the dest is a Address */
 	} operand;
 
 	u16 cycles; /* Remaining cycles */

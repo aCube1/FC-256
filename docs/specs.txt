@@ -62,8 +62,8 @@ Encoding: RRRRRRRR-AAAGIIII
 
 ==== General Purpose ====
 Description: Registers can be accessed as operands. There are 16 possible
-16-bit wide registers, provided by the selector. The low and the high Nibble of
-the selector specify the first and second Registers respectively.
+16-bit wide registers, provided by the selector. The Low and the High Nibble of
+the selector specify the Destination and Source Registers respectively.
 Making possible the selection of 256 combinations.
 
  Code  | Register \   Code  | Register
@@ -87,7 +87,7 @@ the internal state of the CPU, which can only be accessed by instructions.
 
 == Registers ==
  Register | Name            | Size
-    ST*   | Program Status  | u16
+    ST    | Program Status  | u16
     PC    | Program Counter | u32
     SP    | Stack Pointer   | u32
 
