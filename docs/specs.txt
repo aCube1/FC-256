@@ -43,7 +43,7 @@ Encoding: RRRRRRRR-AAAGIIII
 0b0001 |   AND    | D1 &= D2                 | S--Z- |   1
 0b0010 |   IOR    | D1 |= D2                 | S--Z- |   1
 0b0011 |   XOR    | D1 ^= D2                 | S--Z- |   1
-0b0100 |   TST    | D1 * D2                  | SO-Z- |   1
+0b0100 |   TST    | D1 & D2                  | SO-Z- |   1
 0b0101 |   ADD    | D1 += D2 + C             | SO-ZC |   2
 0b0110 |   SUB    | D1 += ~D2 + C            | SO-ZC |   2
 0b0111 |   SHL    | D1 <<= D2                | S--ZC |   2

@@ -576,15 +576,15 @@ Opcode | Addr Mode | Operand          | Cycles
 
 
 ==== TST - Test Bits ====
-- Test one or more bits at D2 location. The D1 bits are used as mask pattern
-and is ANDed with D2, the result is not kept.
+- Test one or more bits at D1 location. The D2 bits are used as mask pattern
+and is ANDed with D1, the result is not kept.
 
 == Status Register ==
 Carry Flag       | Not affected
 Zero Flag        | Set if the result is Zero
 Ignore Interrupt | Not affected
-Overflow Flag    | Set to 14th bit of D2
-Sign Flag        | Set to 15th bit of D2
+Overflow Flag    | Set to 14th bit of D1
+Sign Flag        | Set to 15th bit of D1
 
 == Encoding ==
 Opcode | Addr Mode | Operand          | Cycles

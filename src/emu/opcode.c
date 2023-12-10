@@ -2,6 +2,7 @@
 
 #include "common.h"
 
+#include <limits.h>
 #include <stdlib.h>
 
 /* clang-format off */
@@ -332,7 +333,8 @@ void op_jmp(Cpu *cpu) {
 }
 
 void op_jsr(Cpu *cpu) {
-	stack_push(cpu, cpu->program_counter);
+	stack_push(cpu, cpu->program_counter);       /* Push low */
+	stack_push(cpu, cpu->program_counter >> 16); /* Push high */
 	cpu->program_counter = cpu->operand.dest;
 }
 
@@ -388,43 +390,74 @@ void op_psh(Cpu *cpu) {
 }
 
 void op_ret(Cpu *cpu) {
-	(void)cpu;
+	cpu->program_counter = (stack_pop(cpu) << 16) | stack_pop(cpu);
 }
 
 void op_rol(Cpu *cpu) {
-	(void)cpu;
+	u16 data = operand_read(cpu);
+	u16 mask = (CHAR_BIT * sizeof(data) - 1);
+	u16 count = cpu->operand.src & mask;
+	u16 result = (data << count) | (data >> (-count & mask));
+
+	set_signzero(cpu, result);
+	bit_set(&cpu->status, ST_CARRY, result & 0x01);
+
+	operand_write(cpu, result);
 }
 
 void op_ror(Cpu *cpu) {
-	(void)cpu;
+	u16 data = operand_read(cpu);
+	u16 mask = (CHAR_BIT * sizeof(data) - 1);
+	u16 count = cpu->operand.src & mask;
+	u16 result = (data >> count) | (data >> (-count & mask));
+
+	set_signzero(cpu, result);
+	bit_set(&cpu->status, ST_CARRY, result & 0x8000);
+
+	operand_write(cpu, result);
 }
 
 void op_rti(Cpu *cpu) {
-	(void)cpu;
+	cpu->status = stack_pop(cpu);
+	cpu->program_counter = (stack_pop(cpu) << 16) | stack_pop(cpu);
 }
 
 void op_set(Cpu *cpu) {
-	(void)cpu;
+	cpu->status |= cpu->operand.src;
 }
 
 void op_shl(Cpu *cpu) {
-	(void)cpu;
+	u32 result = operand_read(cpu) << cpu->operand.src;
+
+	set_signzero(cpu, result);
+	set_carry(cpu, result);
 }
 
 void op_shr(Cpu *cpu) {
-	(void)cpu;
+	u32 result = operand_read(cpu) >> cpu->operand.src;
+
+	set_signzero(cpu, result);
+	set_carry(cpu, result);
 }
 
 void op_sub(Cpu *cpu) {
-	(void)cpu;
+	cpu->operand.src = ~cpu->operand.src;
+	op_add(cpu);
 }
 
 void op_tst(Cpu *cpu) {
-	(void)cpu;
+	u16 data = operand_read(cpu);
+
+	bit_set(&cpu->status, ST_ZERO, (data & cpu->operand.src) == 0x0000);
+	bit_set(&cpu->status, ST_OVERFLOW, data & 0x4000);
+	bit_set(&cpu->status, ST_SIGN, data & 0x8000);
 }
 
 void op_xor(Cpu *cpu) {
-	(void)cpu;
+	u16 result = operand_read(cpu) ^ cpu->operand.src;
+	operand_write(cpu, result);
+
+	set_signzero(cpu, result);
 }
 
 void op_xxx(Cpu *cpu) {
