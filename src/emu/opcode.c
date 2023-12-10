@@ -1,7 +1,8 @@
 #include "emu/opcode.h"
 
 #include "common.h"
-#include "log.h"
+
+#include <stdlib.h>
 
 /* clang-format off */
 const Opcode op_table[OPCODE_COUNT] = {
@@ -237,11 +238,11 @@ void op_add(Cpu *cpu) {
 	u32 result = operand_read(cpu);
 	result += cpu->operand.src + bit_get(cpu->status, ST_CARRY);
 
-	operand_write(cpu, result);
-
 	set_signzero(cpu, result);
 	set_carry(cpu, result);
-	set_overflow(cpu, cpu->operand.dest, cpu->operand.src, result);
+	set_overflow(cpu, operand_read(cpu), cpu->operand.src, result);
+
+	operand_write(cpu, result);
 }
 
 void op_and(Cpu *cpu) {
@@ -287,35 +288,58 @@ void op_dec(Cpu *cpu) {
 }
 
 void op_div(Cpu *cpu) {
-	(void)cpu;
+	if (cpu->operand.src == 0) {
+		stack_push(cpu, operand_read(cpu));
+		operand_write(cpu, 0xffff);
+		cpu_exception(cpu, VEC_DIVZERO);
+		return;
+	}
+
+	div_t result = div(operand_read(cpu), cpu->operand.src);
+	operand_write(cpu, result.quot);
+	stack_push(cpu, result.rem);
+
+	set_signzero(cpu, result.quot);
+	bit_set(&cpu->status, ST_CARRY, false);
 }
 
 void op_dvs(Cpu *cpu) {
-	(void)cpu;
+	/* NOTE: I think there's no difference between DIV and DVS.
+	 * Maybe this instruction is Useless. */
+	op_div(cpu);
 }
 
 void op_hlt(Cpu *cpu) {
-	(void)cpu;
+	cpu->is_halt = true;
 }
 
 void op_inc(Cpu *cpu) {
-	(void)cpu;
+	u16 result = operand_read(cpu) + 1;
+	operand_write(cpu, result);
+
+	set_signzero(cpu, result);
 }
 
 void op_ior(Cpu *cpu) {
-	(void)cpu;
+	u16 result = operand_read(cpu) | cpu->operand.src;
+	operand_write(cpu, result);
+
+	set_signzero(cpu, result);
 }
 
 void op_jmp(Cpu *cpu) {
-	(void)cpu;
+	cpu->program_counter = cpu->operand.dest;
 }
 
 void op_jsr(Cpu *cpu) {
-	(void)cpu;
+	stack_push(cpu, cpu->program_counter);
+	cpu->program_counter = cpu->operand.dest;
 }
 
 void op_mls(Cpu *cpu) {
-	(void)cpu;
+	/* NOTE: I think there's no difference between MUL and MLS.
+	 * Maybe this instruction is Useless. */
+	op_mul(cpu);
 }
 
 void op_mov(Cpu *cpu) {
@@ -325,23 +349,42 @@ void op_mov(Cpu *cpu) {
 }
 
 void op_mul(Cpu *cpu) {
-	(void)cpu;
+	u32 result = operand_read(cpu) * cpu->operand.src;
+
+	set_signzero(cpu, result);
+	set_carry(cpu, result);
+	set_overflow(cpu, operand_read(cpu), cpu->operand.src, result);
+
+	operand_write(cpu, result & 0xffff);
+	if (bit_get(cpu->status, ST_CARRY)) {
+		stack_push(cpu, result >> 16);
+	}
 }
 
 void op_nop(Cpu *cpu) {
 	(void)cpu;
+	/* Do literally Nothing :) */
 }
 
 void op_not(Cpu *cpu) {
-	(void)cpu;
+	u16 result = ~operand_read(cpu);
+	operand_write(cpu, result);
+
+	set_signzero(cpu, result);
 }
 
 void op_pop(Cpu *cpu) {
-	(void)cpu;
+	u16 data = stack_pop(cpu);
+	operand_write(cpu, data);
+
+	set_signzero(cpu, data);
 }
 
 void op_psh(Cpu *cpu) {
-	(void)cpu;
+	u16 data = operand_read(cpu);
+	stack_push(cpu, data);
+
+	set_signzero(cpu, data);
 }
 
 void op_ret(Cpu *cpu) {

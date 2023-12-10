@@ -55,6 +55,8 @@ typedef struct Cpu {
 	u32 program_counter;
 	u32 stack_pointer;
 
+	bool is_halt;
+
 	/* Internal Private Data */
 	struct Operands {
 		u16 src;

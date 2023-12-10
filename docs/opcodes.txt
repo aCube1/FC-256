@@ -263,8 +263,8 @@ Opcode | Addr Mode | Operand   | Cycles
 
 
 ==== JSR - Jump to Subroutine ====
-- Pushes the Program Counter (minus one) onto the Stack. Then set the
-Program Counter to the target memory address.
+- Pushes the Program Counter to the next instruction onto the Stack.
+Then set the Program Counter to the target memory address.
 
 == Status Register ==
 Carry Flag       | Not affected

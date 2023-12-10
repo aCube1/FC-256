@@ -66,6 +66,8 @@ void cpu_hardware_request(Cpu *cpu, u8 type) {
 		return; /* Interrupt is disabled */
 	}
 
+	cpu->is_halt = false; /* Make CPU exit halt state. */
+
 	stack_push(cpu, cpu->program_counter);
 	stack_push(cpu, cpu->program_counter >> 16);
 	stack_push(cpu, cpu->status);
@@ -113,9 +115,14 @@ void cpu_step(Cpu *cpu) {
 		}
 	}
 
+	if (cpu->is_halt) {
+		return;
+	}
+
 	cpu->current_opcode = ram_read16(cpu, cpu->program_counter);
 	cpu->program_counter += 2;
 
+	cpu->cycles = 0; /* Just to prevent Interrupts from being ignored */
 	opcode_execute(cpu);
 }
 
